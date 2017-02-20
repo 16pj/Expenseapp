@@ -46,7 +46,7 @@ def manage_items(item):
         return "Deleted item(s)!"
 
 
-@app.route('/shoplist/priority/<string:item>', methods=['PUT'])
+@app.route('/shoplist/prioritize/<string:item>', methods=['PUT'])
 def prioritize_items(item):
     cur = mysql.connection.cursor()
 
@@ -59,7 +59,7 @@ def prioritize_items(item):
         return "Set Priorities!"
 
 
-@app.route('/shoplist/unpriority/<string:item>', methods=['PUT'])
+@app.route('/shoplist/unprioritize/<string:item>', methods=['PUT'])
 def unprioritize_items(item):
     cur = mysql.connection.cursor()
 
@@ -98,7 +98,7 @@ def get_items():
 
 
 @app.route('/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
-def add_expense(item, cost, category="GROCERIES"):
+def add_expense(item, cost, category):
         cur = mysql.connection.cursor()
         cur.execute('''SELECT MAX(id) from expense_table''')
         maxid = cur.fetchone()
@@ -140,13 +140,21 @@ def get_category_month_expenses(month, category):
     return str(retVal)
 
 
-@app.route('/expense/items/<string:item>/<int:month>', methods=['DELETE'])
-def delete_item(item, month):
+@app.route('/expense/items/<string:item>/<int:month>/<int:cost>', methods=['DELETE', 'PUT'])
+def delete_item(item, month, cost):
     cur = mysql.connection.cursor()
-    cur.execute('''DELETE from expense_table where name = "%s" and month = "%s"''' %(item, month))
-    mysql.connection.commit()
-    return "Deleted %s!" %item
 
+    if request.method == 'DELETE':
+        if cost == 0:
+            cur.execute('''DELETE from expense_table where name = "%s" and month = "%s"''' %(item, month))
+        else:
+            cur.execute('''DELETE from expense_table where name = "%s" and month = "%s" and cost = "%s"''' %(item, month, cost))
+        mysql.connection.commit()
+        return "Deleted %s!" %item
+    elif request.method == 'PUT':
+        cur.execute('''UPDATE expense_table set cost = "%s" where name = "%s" and month = "%s"''' % (cost, item, month))
+        mysql.connection.commit()
+        return "Updated %s!" %item
 
 @app.route('/expense/limit_bal')
 def get_month_limit():
