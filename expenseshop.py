@@ -31,15 +31,60 @@ def manage_items(item):
         ID = maxid[0]
         if not maxid[0]:
             ID = -1
-        cur.execute('''INSERT INTO shoplist_table(id, name) value (%s ,"%s")''' %(ID+1, item))
-        mysql.connection.commit()
+        items = item.split(',')
+        for i, j in enumerate(items):
+            cur.execute('''INSERT INTO shoplist_table(id, name) value (%s ,"%s")''' %(ID+1+i, j))
+            mysql.connection.commit()
         return "Added %s!" %item
 
 
     if request.method == 'DELETE':
-        cur.execute('''DELETE from shoplist_table where name = "%s"''' %item)
-        mysql.connection.commit()
-        return "Deleted %s!" %item
+        items = item.split(',')
+        for i, item in enumerate(items):
+            cur.execute('''DELETE from shoplist_table where name = "%s"''' %item)
+            mysql.connection.commit()
+        return "Deleted item(s)!"
+
+
+@app.route('/shoplist/priority/<string:item>', methods=['PUT'])
+def prioritize_items(item):
+    cur = mysql.connection.cursor()
+
+    if request.method == 'PUT':
+
+        items = item.split(',')
+        for i, item in enumerate(items):
+            cur.execute('''UPDATE shoplist_table set priority = "YES" where name = "%s"''' %item)
+            mysql.connection.commit()
+        return "Set Priorities!"
+
+
+@app.route('/shoplist/unpriority/<string:item>', methods=['PUT'])
+def unprioritize_items(item):
+    cur = mysql.connection.cursor()
+
+    if request.method == 'PUT':
+
+        items = item.split(',')
+        for i, item in enumerate(items):
+            cur.execute('''UPDATE shoplist_table set priority = "NO" where name = "%s"''' %item)
+            mysql.connection.commit()
+        return "Unset Priorities!"
+
+
+@app.route('/shoplist/price/<string:item>', methods=['PUT'])
+def price_items(item):
+    cur = mysql.connection.cursor()
+
+    if request.method == 'PUT':
+
+        items = item.split(',')
+        for i, item in enumerate(items):
+            tag = item.split(':')
+            cur.execute('''UPDATE shoplist_table set cost = "%s" where name = "%s"''' % (tag[0], tag[1]))
+            mysql.connection.commit()
+        return "Set Priorities!"
+
 
 @app.route('/shoplist/items')
 def get_items():
@@ -50,6 +95,7 @@ def get_items():
 
 
 #############################EXPENSE PART#####################################
+
 
 @app.route('/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
 def add_expense(item, cost, category="GROCERIES"):
