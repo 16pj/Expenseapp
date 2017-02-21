@@ -86,12 +86,17 @@ def price_items(item):
         return "Set Priorities!"
 
 
-@app.route('/shoplist/items')
+@app.route('/shoplist/items', methods = ['GET', 'POST'])
 def get_items():
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name from shoplist_table''')
     retVal = cur.fetchall()
-    return str(retVal)
+    Val = [i[0] for i in retVal]
+    sting = ""
+    for i in Val:
+        sting += i + "\n"
+
+    return str(sting)
 
 
 #############################EXPENSE PART#####################################
@@ -177,4 +182,4 @@ def update_limit(mon_lim):
 
 
 if __name__ == "__main__":
-    app.run('127.0.0.1', 3000, debug=True)
+    app.run('0.0.0.0', 3000, debug=True)
