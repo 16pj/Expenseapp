@@ -86,10 +86,10 @@ def price_items(item):
         return "Set Priorities!"
 
 
-@app.route('/shoplist/items', methods = ['GET', 'POST'])
+@app.route('/shoplist/items')
 def get_items():
     cur = mysql.connection.cursor()
-    cur.execute('''SELECT name from shoplist_table''')
+    cur.execute('''SELECT name from shoplist_table order by priority desc''')
     retVal = cur.fetchall()
     Val = [i[0] for i in retVal]
     sting = ""
