@@ -8,4 +8,4 @@ testlist2 currently has ArrayAdapter working and hence can manipulate multiple i
 
 
 testlist1 (Modified from testlist2) is for expense tracking and needs to merge into Shoplift2
-testlist1 currently has only add functionality implemented partially.
+testlist1 currently has add, remove, limit and show functions implemented.

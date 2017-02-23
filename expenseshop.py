@@ -123,7 +123,33 @@ def get_all_expenses():
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from expense_table''')
     retVal = cur.fetchall()
-    return str(retVal)
+    sting1 = ""
+    sting = [i for i in retVal]
+    #sting = [i for i in sting]
+
+    #########################LIMIT
+
+    now = datetime.datetime.now()
+    month = "%d%d" % (now.year, now.month)
+    month = month[2:]
+    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
+    mon_val = cur.fetchone()
+    lim = str(lim_val[0] - mon_val[0])
+
+    ############continue String
+
+
+
+    for i in sting:
+        for val in i:
+            sting1 += str(val) + ":"
+        sting1 = sting1[:-1] + ":" + lim + "\n"
+
+
+
+    return str(sting1)
 
 @app.route('/expense/total/<int:month>')
 def get_month_total(month):

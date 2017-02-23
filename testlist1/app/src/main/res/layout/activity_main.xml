@@ -10,6 +10,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.rpj.robin.testlist.MainActivity">
 
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/limit"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:text="Add"
@@ -29,19 +36,12 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/limit"
-        android:layout_alignParentEnd="true" />
-
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/name"
         android:background="#4444e0"
-        android:layout_alignParentStart="true"
+        android:layout_below="@id/limit"
         android:id="@+id/listView" />
 
     <EditText
@@ -50,6 +50,7 @@
         android:inputType="number"
         android:ems="10"
         android:id="@+id/num"
+        android:onClick="repopulate"
         android:background="#8DB600"
         android:layout_alignParentBottom="true"
         android:layout_alignStart="@+id/name"
@@ -61,14 +62,15 @@
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
+        android:onClick="repopulate"
         android:id="@+id/name"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:onClick="repopulate"
         android:background="#8DB600"
         android:layout_alignTop="@+id/ADD"
         android:layout_centerHorizontal="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
         />
+
 
 </RelativeLayout>

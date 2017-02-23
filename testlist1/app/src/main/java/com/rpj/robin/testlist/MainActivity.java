@@ -27,14 +27,17 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Integer> selecteditems;
 
     private ArrayList<String> itemnames;
+    private String splitted[];
     private ArrayList<String> itemdates;
     private ArrayList<String> itemcosts;
+    private TextView limit;
 
 
     private ArrayAdapter<String> adapter;
     private ListView listView;
     private EditText editName;
     private EditText editNum;
+    private String FLAG = "FALSE";
 
     String myURL = "http://192.168.1.25:3000";
 
@@ -49,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
         mylist = new ArrayList<>();
+        itemnames = new ArrayList<>();
+        itemdates = new ArrayList<>();
+        itemcosts = new ArrayList<>();
+        limit = (TextView) findViewById(R.id.limit);
+
+
+
         editName = (EditText) findViewById(R.id.name);
         editNum = (EditText) findViewById(R.id.num);
 
@@ -69,16 +79,24 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
         repopulate(null);
 
     }
 
     public void repopulate(View view){
         String sURL = myURL + "/expense/items";
+        String lURL = myURL + "/expense/limit_bal";
         mylist.clear();
+        itemnames.clear();
+        itemcosts.clear();
+        itemdates.clear();
         adapter.notifyDataSetChanged();
+        FLAG = "FALSE";
         new GetUrlContentTask().execute(sURL, "SHOW");
         adapter.notifyDataSetChanged();
+
     }
 
     public void onAdd(View view){
@@ -96,27 +114,27 @@ public class MainActivity extends AppCompatActivity {
            // itemdates.add(Integer.parseInt(newstring));
             //itemcosts.add(num);
 
-
             name = name.replace(" ", "_");
             String sURL = myURL + "/expense/items/" + name + "/" + num + "/DEFAULT";
             new GetUrlContentTask().execute(sURL, "ADD");
             editName.setText("");
             editNum.setText("");
-          //  repopulate(null);
-            //listView.clearChoices();
+             repopulate(null);
+             listView.clearChoices();
     }
     }
 
     public void onRemove(View view){
 
         if(mylist.size() == 0) return;
+
         for (int item:selecteditems) {
             String thing = itemnames.get(item);
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            //mylist.remove(item);
-         //   String sURL = myURL + "/expense/items/" + thing + "/" + date + "/0";
-          //  new GetUrlContentTask().execute(sURL, "DELETE");
+            mylist.remove(item);
+            String sURL = myURL + "/expense/items/" + thing + "/" + itemdates.get(item) + "/0";
+            new GetUrlContentTask().execute(sURL, "DELETE");
         }
         repopulate(null);
         listView.clearChoices();
@@ -204,10 +222,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(String... progress) {
-            progress[0] = progress[0].replace("_", " ");
-            mylist.add(progress[0]);
-            adapter.notifyDataSetChanged();
-        }
+
+                progress[0] = progress[0].replace("_", " ");
+                splitted = progress[0].split(":");
+                String temp = splitted[0] + "";
+                for (int i = splitted[1].length(); i < 50 - splitted[0].length(); i++) {
+                    temp += " ";
+                }
+
+                mylist.add(temp + splitted[1] + " SEK");
+                adapter.notifyDataSetChanged();
+                itemnames.add(splitted[0]);
+                itemcosts.add(splitted[1]);
+                itemdates.add(splitted[2]);
+                String lim = "MONTH LIMIT: " + splitted[4];
+                limit.setText(lim);
+
+            }
+
 
         protected void onPostExecute(String result) {
         }
