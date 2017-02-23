@@ -9,21 +9,33 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+
+import static java.util.Locale.US;
 
 public class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> mylist;
-    private ArrayList<String> selecteditems;
+    private ArrayList<Integer> selecteditems;
+
+    private ArrayList<String> itemnames;
+    private ArrayList<String> itemdates;
+    private ArrayList<String> itemcosts;
+
+
     private ArrayAdapter<String> adapter;
     private ListView listView;
-    private EditText editText;
+    private EditText editName;
+    private EditText editNum;
+
     String myURL = "http://192.168.1.25:3000";
 
 
@@ -33,11 +45,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listView = (ListView) findViewById(R.id.listview);
+        listView = (ListView) findViewById(R.id.listView);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
         mylist = new ArrayList<>();
-        editText = (EditText) findViewById(R.id.editText);
+        editName = (EditText) findViewById(R.id.name);
+        editNum = (EditText) findViewById(R.id.num);
 
         adapter = new ArrayAdapter<String>(this, R.layout.list_items, R.id.checkedview, mylist);
         listView.setAdapter(adapter);
@@ -45,13 +58,12 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String item = ((TextView) view).getText().toString();
 
-                if (selecteditems.contains(item)){
-                    selecteditems.remove(item);
+                if (selecteditems.contains(position)){
+                    selecteditems.remove(position);
                 }
                 else {
-                    selecteditems.add(item);
+                    selecteditems.add(position);
 
                 }
 
@@ -62,37 +74,49 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void repopulate(View view){
-        String sURL = myURL + "/shoplist/items";
+        String sURL = myURL + "/expense/items";
         mylist.clear();
         adapter.notifyDataSetChanged();
         new GetUrlContentTask().execute(sURL, "SHOW");
         adapter.notifyDataSetChanged();
     }
 
-
     public void onAdd(View view){
-        String thing = editText.getText().toString();
+        String name = editName.getText().toString();
+        String num = "";
+        num = editNum.getText().toString();
+        //num = Integer.parseInt(editNum.getText().toString());
 
-        if (!thing.equals("")) {
-            thing = thing.replace(" ", "_");
-            String sURL = myURL + "/shoplist/items/" + thing;
-            //mylist.add(thing);
-            //adapter.notifyDataSetChanged();
+        if (!name.equals("") && !num.equals("")) {
+
+           // String newstring = new SimpleDateFormat("yyyy-M").format(new Date());
+         //   System.out.println(newstring);
+          //  newstring = newstring.replace("-","");
+           // itemnames.add(name);
+           // itemdates.add(Integer.parseInt(newstring));
+            //itemcosts.add(num);
+
+
+            name = name.replace(" ", "_");
+            String sURL = myURL + "/expense/items/" + name + "/" + num + "/DEFAULT";
             new GetUrlContentTask().execute(sURL, "ADD");
-            editText.setText("");
-            repopulate(null);
-            listView.clearChoices();
+            editName.setText("");
+            editNum.setText("");
+          //  repopulate(null);
+            //listView.clearChoices();
     }
     }
 
     public void onRemove(View view){
 
         if(mylist.size() == 0) return;
-        for (String item:selecteditems) {
-            String thing = item.replace(" ", "_");
+        for (int item:selecteditems) {
+            String thing = itemnames.get(item);
+            //int date = itemdates.get(item);
+            thing = thing.replace(" ", "_");
             //mylist.remove(item);
-            String sURL = myURL + "/shoplist/items/" + thing;
-            new GetUrlContentTask().execute(sURL, "DELETE");
+         //   String sURL = myURL + "/expense/items/" + thing + "/" + date + "/0";
+          //  new GetUrlContentTask().execute(sURL, "DELETE");
         }
         repopulate(null);
         listView.clearChoices();

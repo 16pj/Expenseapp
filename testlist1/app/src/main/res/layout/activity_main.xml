@@ -12,15 +12,6 @@
 
 
     <Button
-        android:text="Star"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/PRIORITY"
-        android:onClick="onPriority"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/ADD" />
-
-    <Button
         android:text="Add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,37 +27,48 @@
         android:id="@+id/REMOVE"
         android:onClick="onRemove"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/COST"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:text="COST"
+    <TextView
+        android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/COST"
-        android:onClick="onCost"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/PRIORITY" />
+        android:id="@+id/limit"
+        android:layout_alignParentEnd="true" />
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listview"
-        android:background="#6272e9"
-        android:layout_above="@+id/editText"
+        android:layout_above="@+id/name"
+        android:background="#4444e0"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="16dp"
-        />
+        android:id="@+id/listView" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/num"
+        android:background="#8DB600"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/name"
+        android:layout_toEndOf="@+id/ADD"
+        android:layout_toStartOf="@+id/REMOVE"/>
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
-        android:id="@+id/editText"
+        android:id="@+id/name"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:layout_above="@+id/PRIORITY"
+        android:onClick="repopulate"
+        android:background="#8DB600"
+        android:layout_alignTop="@+id/ADD"
         android:layout_centerHorizontal="true"
-        android:onClick="repopulate" />
+        android:layout_toEndOf="@+id/ADD"
+        android:layout_toStartOf="@+id/REMOVE"
+        />
 
 </RelativeLayout>
