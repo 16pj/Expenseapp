@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_mysqldb import MySQL
-import datetime
+import datetime, json
 
 
 app = Flask(__name__)
@@ -19,6 +19,21 @@ def index():
 
 
 ##############################SHOPLIST PART############################
+
+
+
+
+@app.route('/shoplist/items')
+def get_items():
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT name from shoplist_table order by priority desc''')
+    retVal = cur.fetchall()
+    Val = [i[0] for i in retVal]
+    sting = ""
+    for i in Val:
+        sting += i + "\n"
+
+    return str(sting)
 
 
 @app.route('/shoplist/items/<string:item>', methods=['POST', 'DELETE'])
@@ -86,20 +101,75 @@ def price_items(item):
         return "Set Priorities!"
 
 
-@app.route('/shoplist/items')
-def get_items():
-    cur = mysql.connection.cursor()
-    cur.execute('''SELECT name from shoplist_table order by priority desc''')
-    retVal = cur.fetchall()
-    Val = [i[0] for i in retVal]
-    sting = ""
-    for i in Val:
-        sting += i + "\n"
-
-    return str(sting)
 
 
 #############################EXPENSE PART#####################################
+
+@app.route('/expense/items')
+def get_all_expenses():
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT name, cost, month, category from expense_table''')
+    retVal = cur.fetchall()
+    sting1 = ""
+
+    now = datetime.datetime.now()
+    month = "%d%d" % (now.year, now.month)
+    month = month[2:]
+    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
+    mon_val = cur.fetchone()
+    lim = ""
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        pass
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+        spring.append(thing)
+    return (json.dumps(spring))
+
+
+
+@app.route('/expense/total/<int:month>')
+def get_month_total(month):
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT sum(cost) from expense_table where month = %d''' % month)
+    retVal = cur.fetchone()
+    return str(retVal[0])
+
+
+
+@app.route('/expense/items/<int:month>/<string:category>')
+def get_category_month_expenses(month, category):
+    cur = mysql.connection.cursor()
+    if month == 0:
+        cur.execute('''SELECT name, cost, month from expense_table where category = "%s"''' % category)
+    elif category == '0':
+        cur.execute('''SELECT name, cost, category from expense_table where month = %d''' % month)
+    else:
+        cur.execute('''SELECT name, cost from expense_table where month = %s and category = "%s"''' % (month, category))
+    retVal = cur.fetchall()
+    return str(retVal)
+
+
+
+@app.route('/expense/limit_bal')
+def get_month_limit():
+    cur = mysql.connection.cursor()
+    now = datetime.datetime.now()
+    month = "%d%d" % (now.year, now.month)
+    month = month[2:]
+    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
+    mon_val = cur.fetchone()
+    return str(lim_val[0]-mon_val[0])
+
 
 
 @app.route('/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
@@ -118,57 +188,13 @@ def add_expense(item, cost, category):
         return "Added %s!" %item
 
 
-@app.route('/expense/items')
-def get_all_expenses():
+@app.route('/expense/limit/<int:mon_lim>', methods=['PUT'])
+def update_limit(mon_lim):
     cur = mysql.connection.cursor()
-    cur.execute('''SELECT name, cost, month, category from expense_table''')
-    retVal = cur.fetchall()
-    sting1 = ""
-    sting = [i for i in retVal]
-    #sting = [i for i in sting]
+    cur.execute('''UPDATE limit_table set mon_lim = %d where name = "DEFAULT"''' % (mon_lim))
+    mysql.connection.commit()
+    return "Updated monthly limit to %s!" %mon_lim
 
-    #########################LIMIT
-
-    now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
-    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
-    lim_val = cur.fetchone()
-    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
-    mon_val = cur.fetchone()
-    lim = str(lim_val[0] - mon_val[0])
-
-    ############continue String
-
-
-
-    for i in sting:
-        for val in i:
-            sting1 += str(val) + ":"
-        sting1 = sting1[:-1] + ":" + lim + "\n"
-
-
-
-    return str(sting1)
-
-@app.route('/expense/total/<int:month>')
-def get_month_total(month):
-    cur = mysql.connection.cursor()
-    cur.execute('''SELECT sum(cost) from expense_table where month = %d''' % month)
-    retVal = cur.fetchone()
-    return str(retVal[0])
-
-@app.route('/expense/items/<int:month>/<string:category>')
-def get_category_month_expenses(month, category):
-    cur = mysql.connection.cursor()
-    if month == 0:
-        cur.execute('''SELECT name, cost, month from expense_table where category = "%s"''' % category)
-    elif category == '0':
-        cur.execute('''SELECT name, cost, category from expense_table where month = %d''' % month)
-    else:
-        cur.execute('''SELECT name, cost from expense_table where month = %s and category = "%s"''' % (month, category))
-    retVal = cur.fetchall()
-    return str(retVal)
 
 
 @app.route('/expense/items/<string:item>/<int:month>/<int:cost>', methods=['DELETE', 'PUT'])
@@ -186,25 +212,6 @@ def delete_item(item, month, cost):
         cur.execute('''UPDATE expense_table set cost = "%s" where name = "%s" and month = "%s"''' % (cost, item, month))
         mysql.connection.commit()
         return "Updated %s!" %item
-
-@app.route('/expense/limit_bal')
-def get_month_limit():
-    cur = mysql.connection.cursor()
-    now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
-    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
-    lim_val = cur.fetchone()
-    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
-    mon_val = cur.fetchone()
-    return str(lim_val[0]-mon_val[0])
-
-@app.route('/expense/limit/<int:mon_lim>', methods=['PUT'])
-def update_limit(mon_lim):
-    cur = mysql.connection.cursor()
-    cur.execute('''UPDATE limit_table set mon_lim = %d where name = "DEFAULT"''' % (mon_lim))
-    mysql.connection.commit()
-    return "Updated monthly limit to %s!" %mon_lim
 
 
 if __name__ == "__main__":

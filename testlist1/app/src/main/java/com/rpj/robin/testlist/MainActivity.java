@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,9 +18,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.concurrent.ExecutionException;
 
-import static java.util.Locale.US;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,9 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Integer> selecteditems;
 
     private ArrayList<String> itemnames;
-    private String splitted[];
     private ArrayList<String> itemdates;
     private ArrayList<String> itemcosts;
+    private ArrayList<String> itemcategory;
+
     private TextView limit;
 
 
@@ -37,7 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private EditText editName;
     private EditText editNum;
-    private String FLAG = "FALSE";
+    private static String lim;
+    private static String Str1;
+    private static String Str2;
+    private static String temp;
+    private static int i;
+    private static int j;
 
     String myURL = "http://192.168.1.25:3000";
 
@@ -55,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         itemnames = new ArrayList<>();
         itemdates = new ArrayList<>();
         itemcosts = new ArrayList<>();
+        itemcategory = new ArrayList<>();
         limit = (TextView) findViewById(R.id.limit);
 
 
@@ -69,13 +81,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                if (selecteditems.contains(position)){
-                    selecteditems.remove(position);
-                }
-                else {
-                    selecteditems.add(position);
-
-                }
+                //try {
+                    if (selecteditems.contains(position)) {
+                        selecteditems.remove(position);
+                    } else {
+                        selecteditems.add(position);
+                    }
+               // }catch (Exception e){
+                 //   e.printStackTrace();
+                //}
 
             }
         });
@@ -87,13 +101,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void repopulate(View view){
         String sURL = myURL + "/expense/items";
-        String lURL = myURL + "/expense/limit_bal";
         mylist.clear();
         itemnames.clear();
         itemcosts.clear();
         itemdates.clear();
         adapter.notifyDataSetChanged();
-        FLAG = "FALSE";
         new GetUrlContentTask().execute(sURL, "SHOW");
         adapter.notifyDataSetChanged();
 
@@ -132,9 +144,9 @@ public class MainActivity extends AppCompatActivity {
             String thing = itemnames.get(item);
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            mylist.remove(item);
             String sURL = myURL + "/expense/items/" + thing + "/" + itemdates.get(item) + "/0";
             new GetUrlContentTask().execute(sURL, "DELETE");
+            mylist.remove(item);
         }
         repopulate(null);
         listView.clearChoices();
@@ -223,7 +235,39 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onProgressUpdate(String... progress) {
 
-                progress[0] = progress[0].replace("_", " ");
+
+            /*    try {
+                    JSONArray jsonArray = new JSONArray(progress[0]);
+
+                    for (i =0; i< jsonArray.length(); i++) {
+                        Str1 = jsonArray.getJSONObject(i).getString("name");
+                        Str2 = jsonArray.getJSONObject(i).getString("cost");
+
+                        String temp = Str1 + "";
+                        for (j = Str2.length(); i < 50 - Str1.length(); i++) {
+                            temp += " ";
+                        }
+
+                        mylist.add(temp + Str2 + " SEK");
+                        itemnames.add(Str1);
+                        itemcosts.add(Str2);
+                        itemdates.add(jsonArray.getJSONObject(i).getString("date"));
+                        itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
+                        lim = jsonArray.getJSONObject(i).getString("limit");
+                    }
+                    limit.setText(lim);
+                    adapter.notifyDataSetChanged();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+*/
+
+
+
+
+
+           /*     progress[0] = progress[0].replace("_", " ");
                 splitted = progress[0].split(":");
                 String temp = splitted[0] + "";
                 for (int i = splitted[1].length(); i < 50 - splitted[0].length(); i++) {
@@ -237,11 +281,35 @@ public class MainActivity extends AppCompatActivity {
                 itemdates.add(splitted[2]);
                 String lim = "MONTH LIMIT: " + splitted[4];
                 limit.setText(lim);
-
+*/
             }
 
 
         protected void onPostExecute(String result) {
+
+               try {
+                    JSONArray jsonArray = new JSONArray(result);
+
+
+                    for (i =0; i< jsonArray.length(); i++) {
+                        temp = "";
+                        for (int k =jsonArray.getJSONObject(i).getString("cost").length(); k <55 - jsonArray.getJSONObject(i).getString("name").length();k++){
+                                temp = temp + " ";
+                        }
+
+                        mylist.add(jsonArray.getJSONObject(i).getString("name") + temp + jsonArray.getJSONObject(i).getString("cost") + " SEK");
+                        itemnames.add(jsonArray.getJSONObject(i).getString("name"));
+                        itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
+                        itemdates.add(jsonArray.getJSONObject(i).getString("date"));
+                        itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
+                    }
+                    limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(i-1).getString("limit")));
+                    adapter.notifyDataSetChanged();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
         }
     }
 
