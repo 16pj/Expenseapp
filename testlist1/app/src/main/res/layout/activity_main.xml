@@ -16,6 +16,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/limit"
         android:layout_alignParentTop="true"
+        android:onClick="onLimit"
         android:layout_alignParentEnd="true" />
 
     <Button

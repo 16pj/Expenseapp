@@ -1,8 +1,11 @@
 package com.rpj.robin.testlist;
 
+import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -49,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private static String temp;
     private static int i;
     private static int j;
+    private String m_Text = "";
 
     String myURL = "http://192.168.1.25:3000";
     //String myURL = "http://rojo16.pythonanywhere.com";
@@ -112,6 +116,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    public void set_limit(View view){
+        String sURL = myURL + "/expense/limit/" + m_Text;
+        new GetUrlContentTask().execute(sURL, "LIMIT");
+        Toast.makeText(this, "Limit set to " + m_Text, Toast.LENGTH_SHORT).show();
+    }
+
     public void onAdd(View view){
         String name = editName.getText().toString();
         String num = "";
@@ -156,13 +167,48 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void onPriority(View view){
-       ;
+    public void onLimit(View view){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Set Limit");
+
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                try{
+                    int temp = Integer.parseInt(m_Text);
+                    m_Text = String.valueOf(temp);
+                    set_limit(null);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Invalid limit", Toast.LENGTH_SHORT).show();
+                }
+
+
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     public void onCost(View view) {
         ;
     }
+
 
 
     private class GetUrlContentTask extends AsyncTask<String, String, String> {
@@ -195,6 +241,27 @@ public class MainActivity extends AppCompatActivity {
                     URL url = new URL(params[0]);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("DELETE");
+                    connection.setDoOutput(true);
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(5000);
+                    connection.connect();
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String content = "", line;
+                    while ((line = rd.readLine()) != null) {
+                        content += line + "\n";
+                    }
+                    return content;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }}
+
+            else if (params[1].equals("LIMIT")){
+
+                try {
+                    URL url = new URL(params[0]);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("PUT");
                     connection.setDoOutput(true);
                     connection.setConnectTimeout(5000);
                     connection.setReadTimeout(5000);

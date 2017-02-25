@@ -10,4 +10,4 @@ testlist2 works fine except for cost
 
 testlist1 (Modified from testlist2) is for expense tracking and needs to merge into Shoplift2
 testlist1 currently has add, remove, limit and show functions implemented. Fixed json output.
-testlist1 need to fix app crash when deleting more than 1 option
+testlist1 fixed app crash when deleting more than 1 option, added limit changing option
