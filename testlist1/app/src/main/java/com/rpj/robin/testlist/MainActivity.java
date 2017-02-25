@@ -29,7 +29,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     private ArrayList<String> mylist;
-    private ArrayList<Integer> selecteditems;
+    private ArrayList<String> selecteditems;
 
     private ArrayList<String> itemnames;
     private ArrayList<String> itemdates;
@@ -80,13 +80,14 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String item = ((TextView) view).getText().toString();
 
-                //try {
-                    if (selecteditems.contains(position)) {
-                        selecteditems.remove(position);
-                    } else {
-                        selecteditems.add(position);
-                    }
+                if (selecteditems.contains(item)){
+                    selecteditems.remove(item);
+                }
+                else {
+                    selecteditems.add(item);
+                }
                // }catch (Exception e){
                  //   e.printStackTrace();
                 //}
@@ -140,11 +141,12 @@ public class MainActivity extends AppCompatActivity {
 
         if(mylist.size() == 0) return;
 
-        for (int item:selecteditems) {
-            String thing = itemnames.get(item);
+
+        for (String item:selecteditems) {
+            String thing = itemnames.get(selecteditems.indexOf(item));
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            String sURL = myURL + "/expense/items/" + thing + "/" + itemdates.get(item) + "/0";
+            String sURL = myURL + "/expense/items/" + thing + "/" + itemdates.get(selecteditems.indexOf(item)) + "/0";
             new GetUrlContentTask().execute(sURL, "DELETE");
             mylist.remove(item);
         }
