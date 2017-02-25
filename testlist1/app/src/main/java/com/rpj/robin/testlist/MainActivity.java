@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 // Set up the input
         final EditText input = new EditText(this);
 // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
 // Set up the buttons
@@ -356,9 +356,9 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
 
-               try {
+            try {
                     JSONArray jsonArray = new JSONArray(result);
-
+                limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(jsonArray.length()-1).getString("limit")));
 
                     for (i =0; i< jsonArray.length(); i++) {
                         temp = "";
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
                         itemdates.add(jsonArray.getJSONObject(i).getString("date"));
                         itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
                     }
-                    limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(i-1).getString("limit")));
+                    //limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(0).getString("limit")));
                     adapter.notifyDataSetChanged();
                 }catch (Exception e){
                     e.printStackTrace();
