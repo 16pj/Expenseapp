@@ -232,15 +232,20 @@ public class MainActivity extends AppCompatActivity {
         */}
 
         protected void onPostExecute(String result) {
-
+            String item;
             try {
                 JSONArray jsonArray = new JSONArray(result);
                 for (i =0; i< jsonArray.length(); i++) {
-                    if (jsonArray.getJSONObject(i).getString("priority").equals("YES"))
-                    mylist.add("*" + jsonArray.getJSONObject(i).getString("name"));
-                    else
-                        mylist.add(jsonArray.getJSONObject(i).getString("name"));
+                    if (jsonArray.getJSONObject(i).getString("priority").equals("YES")) {
+                        item = "*" + jsonArray.getJSONObject(i).getString("name");
+                        item = item.replace("_", " ");
+                        mylist.add(item);
+                    } else {
+                        item = jsonArray.getJSONObject(i).getString("name");
+                        item = item.replace("_", " ");
+                        mylist.add(item);
 
+                    }
                 }
                 adapter.notifyDataSetChanged();
             }catch (Exception e){
