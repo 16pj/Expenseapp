@@ -2,10 +2,16 @@ from flask import Flask, request
 from flask_mysqldb import MySQL
 import datetime, json
 
+#SERVER ON  rojo16.pythonanywhere.com
 
 app = Flask(__name__)
+'''
+app.config['MYSQL_HOST'] = 'rojo16.mysql.pythonanywhere-services.com'
+app.config['MYSQL_USER'] = 'rojo16'
+app.config['MYSQL_PASSWORD'] = 'hello123'
+app.config['MYSQL_DB'] = 'rojo16$testdb'
 
-
+'''
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_PASSWORD'] = 'test123'
@@ -107,7 +113,7 @@ def price_items(item):
 
 #############################EXPENSE PART#####################################
 
-@app.route('/expense/items')
+@app.route('/expense/items1')
 def get_all_expenses():
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from expense_table''')
@@ -134,6 +140,38 @@ def get_all_expenses():
         thing['limit'] = lim
         spring.append(thing)
     return (json.dumps(spring))
+
+
+@app.route('/expense/items')
+def get_all_expenses1():
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT name, cost, month, category from expense_table''')
+    retVal = cur.fetchall()
+    sting1 = ""
+
+    now = datetime.datetime.now()
+    month = "%d%d" % (now.year, now.month)
+    month = month[2:]
+    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
+    mon_val = cur.fetchone()
+    lim = ""
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        lim = str(lim_val[0])
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+        spring.append(thing)
+    if len(sting) != 0:
+        return (json.dumps(spring))
+    else:
+        return json.dumps([{'limit':lim}])
 
 
 
