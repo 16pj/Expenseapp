@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
                     int temp = Integer.parseInt(m_Text);
                     m_Text = String.valueOf(temp);
                     set_limit(null);
+                    repopulate(null);
                 }catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(MainActivity.this, "Invalid limit", Toast.LENGTH_SHORT).show();

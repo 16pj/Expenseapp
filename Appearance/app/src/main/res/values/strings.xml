@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Appearance</string>
+    <string name="title_activity_shoplist">Shoplist</string>
+    <string name="title_activity_expense">Expense</string>
+
+    <string name="entpass">Enter Password</string>
+
+
+    <string name="stuff">LOGIN</string>
+    <string name="stuff2">LOGOUT</string>
+    <string name="stuff3">RESET</string>
+</resources>

@@ -94,7 +94,7 @@ def unprioritize_items(item):
             mysql.connection.commit()
         return "Unset Priorities!"
 
-
+"""
 @app.route('/shoplist/price/<string:item>', methods=['PUT'])
 def price_items(item):
     cur = mysql.connection.cursor()
@@ -108,39 +108,9 @@ def price_items(item):
             mysql.connection.commit()
         return "Set Priorities!"
 
-
-
+"""
 
 #############################EXPENSE PART#####################################
-
-@app.route('/expense/items1')
-def get_all_expenses():
-    cur = mysql.connection.cursor()
-    cur.execute('''SELECT name, cost, month, category from expense_table''')
-    retVal = cur.fetchall()
-    sting1 = ""
-
-    now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
-    cur.execute('''SELECT mon_lim from limit_table where name = "DEFAULT"''')
-    lim_val = cur.fetchone()
-    cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
-    mon_val = cur.fetchone()
-    lim = ""
-    try:
-        lim = str(lim_val[0] - mon_val[0])
-    except:
-        pass
-    sting = [i for i in retVal]
-    # sting = [i for i in sting]
-    spring = []
-    for i in sting:
-        thing =dict(zip(["name", "cost", "date", "category"], i))
-        thing['limit'] = lim
-        spring.append(thing)
-    return (json.dumps(spring))
-
 
 @app.route('/expense/items')
 def get_all_expenses1():
@@ -158,6 +128,7 @@ def get_all_expenses1():
     mon_val = cur.fetchone()
     lim = ""
     try:
+        #### GET THE LIMIT DIFFERENCE FROM EXPENSE
         lim = str(lim_val[0] - mon_val[0])
     except:
         lim = str(lim_val[0])
@@ -197,7 +168,7 @@ def get_category_month_expenses(month, category):
     return str(retVal)
 
 
-
+"""
 @app.route('/expense/limit_bal')
 def get_month_limit():
     cur = mysql.connection.cursor()
@@ -209,7 +180,7 @@ def get_month_limit():
     cur.execute('''SELECT sum(cost) from expense_table where month = %s''' % month)
     mon_val = cur.fetchone()
     return str(lim_val[0]-mon_val[0])
-
+"""
 
 
 @app.route('/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
@@ -234,7 +205,6 @@ def update_limit(mon_lim):
     cur.execute('''UPDATE limit_table set mon_lim = %d where name = "DEFAULT"''' % (mon_lim))
     mysql.connection.commit()
     return "Updated monthly limit to %s!" %mon_lim
-
 
 
 @app.route('/expense/items/<string:item>/<int:month>/<int:cost>', methods=['DELETE', 'PUT'])
