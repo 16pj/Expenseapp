@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private static int j;
 
     String myURL = "http://192.168.1.25:3000";
-
+    //String myURL = "http://rojo16.pythonanywhere.com";
 
 
     @Override
@@ -148,9 +148,9 @@ public class MainActivity extends AppCompatActivity {
             new GetUrlContentTask().execute(sURL, "DELETE");
             mylist.remove(item);
         }
-        repopulate(null);
         listView.clearChoices();
         selecteditems.clear();
+        repopulate(null);
 
     }
 

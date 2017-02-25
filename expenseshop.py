@@ -4,10 +4,13 @@ import datetime, json
 
 
 app = Flask(__name__)
+
+
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
+
 
 mysql = MySQL(app)
 
@@ -21,19 +24,18 @@ def index():
 ##############################SHOPLIST PART############################
 
 
-
-
 @app.route('/shoplist/items')
 def get_items():
     cur = mysql.connection.cursor()
-    cur.execute('''SELECT name from shoplist_table order by priority desc''')
+    cur.execute('''SELECT name, cost, priority from shoplist_table order by priority desc''')
     retVal = cur.fetchall()
-    Val = [i[0] for i in retVal]
-    sting = ""
-    for i in Val:
-        sting += i + "\n"
-
-    return str(sting)
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "priority"], i))
+        spring.append(thing)
+    return (json.dumps(spring))
 
 
 @app.route('/shoplist/items/<string:item>', methods=['POST', 'DELETE'])
@@ -215,4 +217,5 @@ def delete_item(item, month, cost):
 
 
 if __name__ == "__main__":
+    #app.run('0.0.0.0', 35741, debug=True)
     app.run('0.0.0.0', 3000, debug=True)

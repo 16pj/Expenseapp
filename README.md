@@ -24,7 +24,7 @@ II. BACKEND: Python REST Server
 
 	2) create table shoplist_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10));
 
-	3) create table limit_table(name VARCHAR(20), mon_lim INT)
+	3) create table limit_table(name VARCHAR(20), mon_lim INT);
 
 
 
