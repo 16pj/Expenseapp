@@ -11,6 +11,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,9 +24,12 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> mylist;
     private ArrayList<String> selecteditems;
     private ArrayAdapter<String> adapter;
+    private int i;
     private ListView listView;
     private EditText editText;
-    String myURL = "http://192.168.1.25:3000";
+    String myURL = "http://192.168.1.25:35741";
+    //String myURL = "http://rojo16.pythonanywhere.com";
+//.
 
 
 
@@ -52,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else {
                     selecteditems.add(item);
-
                 }
 
             }
@@ -89,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
 
         if(mylist.size() == 0) return;
         for (String item:selecteditems) {
+            if (item.startsWith("*"))
+                item = item.substring(1);
             String thing = item.replace(" ", "_");
             //mylist.remove(item);
             String sURL = myURL + "/shoplist/items/" + thing;
@@ -101,7 +107,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPriority(View view){
-       ;
+
+        for (String item:selecteditems){
+            if (item.startsWith("*")) {
+                mylist.remove(item);
+                mylist.add(item.substring(1));
+                String thing = item.replace(" ", "_");
+                String sURL = myURL + "/shoplist/unprioritize/" + thing.substring(1);
+                new GetUrlContentTask().execute(sURL, "PRIORITY");
+            }
+            else {
+                mylist.remove(item);
+                mylist.add("*" + item);
+                String thing = item.replace(" ", "_");
+                String sURL = myURL + "/shoplist/prioritize/" + thing;
+                new GetUrlContentTask().execute(sURL, "PRIORITY");
+            }}
+            listView.clearChoices();
+            selecteditems.clear();
+            repopulate(null);
+
     }
 
     public void onCost(View view) {
@@ -154,6 +179,27 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }}
 
+            else if (params[1].equals("PRIORITY")){
+
+                try {
+                    URL url = new URL(params[0]);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("PUT");
+                    connection.setDoOutput(true);
+                    connection.setConnectTimeout(5000);
+                    connection.setReadTimeout(5000);
+                    connection.connect();
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String content = "", line;
+                    while ((line = rd.readLine()) != null) {
+                        content += line + "\n";
+                    }
+                    return content;
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }}
+
             else if (params[1].equals("SHOW")) {
                 try {
                     URL url = new URL(params[0]);
@@ -180,12 +226,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(String... progress) {
-            progress[0] = progress[0].replace("_", " ");
+            /*progress[0] = progress[0].replace("_", " ");
             mylist.add(progress[0]);
             adapter.notifyDataSetChanged();
-        }
+        */}
 
         protected void onPostExecute(String result) {
+
+            try {
+                JSONArray jsonArray = new JSONArray(result);
+                for (i =0; i< jsonArray.length(); i++) {
+                    if (jsonArray.getJSONObject(i).getString("priority").equals("YES"))
+                    mylist.add("*" + jsonArray.getJSONObject(i).getString("name"));
+                    else
+                        mylist.add(jsonArray.getJSONObject(i).getString("name"));
+
+                }
+                adapter.notifyDataSetChanged();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+
         }
     }
 
