@@ -1,8 +1,13 @@
 package com.rpj.robin.appearance;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -18,17 +23,33 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
+
+
 public class MainActivity extends AppCompatActivity {
-    private String userID;
-    private String userPassword;
+
+
     private String enter;
+    private String myURL = "http://192.168.1.25:3000";
+
+    //String myURL = "http://rojo16.pythonanywhere.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String name =   sharedpref.getString("username", "");
+        if (name.isEmpty()) {
+                saveInfo("","");
+        }
     }
 
 
@@ -46,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 if (item.isChecked())
                     item.setChecked(false);
                 else item.setChecked(true);
-                Toast.makeText(this, "LOGIN", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "SETTINGS", Toast.LENGTH_SHORT).show();
 
                 Intent i = new Intent(MainActivity.this, Login.class);
                 startActivity(i);
@@ -63,11 +84,10 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
                 builder1.setTitle("Are You Sure?");
 
-                final EditText input = new EditText(this);
                 builder1.setPositiveButton("Logout", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ;
+                        saveInfo("", "");
 
                     }
                 });
@@ -82,53 +102,60 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
 
-            case R.id.stuff3:
-                if (item.isChecked())
-                    item.setChecked(false);
-                else item.setChecked(true);
-                Toast.makeText(this, "RESET", Toast.LENGTH_SHORT).show();
-
-
-                AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-                builder2.setTitle("Are you sure you want to Reset?");
-                builder2.setMessage("Enter Password");
-
-
-                final EditText input_reset = new EditText(this);
-                input_reset.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                builder2.setView(input_reset);
-
-                builder2.setPositiveButton("RESET", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(MainActivity.this, "Everything is Fresh now!", Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                builder2.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder2.show();
-
-                return true;
             default:
-                return super.onOptionsItemSelected(item);
-
-
+                return false;
         }
     }
 
-    public void onlist1(View view){
+    public void onlist1(View view) {
+
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
+        if(name.equals("") && passwd.equals("")){
+            Toast.makeText(this, "Please Login with Correct Credentials", Toast.LENGTH_SHORT).show();
+        }
+        else {
+
         Intent i = new Intent(MainActivity.this, Shoplist.class);
         startActivity(i);
     }
-
-    public void onlist2(View view){
-        Intent i = new Intent(MainActivity.this, Expense.class);
-        startActivity(i);
     }
+
+
+    public void onlist2(View view) {
+
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
+        if(name.equals("") && passwd.equals("")){
+            Toast.makeText(this, "Please Login with Correct Credentials", Toast.LENGTH_SHORT).show();
+        }
+        else {
+
+            Intent i = new Intent(MainActivity.this, Expense.class);
+            startActivity(i);
+        }
+    }
+
+
+    public void saveInfo(String userName, String userPass){
+
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpref.edit();
+        editor.putString("username", userName);
+        editor.putString("password", userPass);
+        editor.apply();
+    }
+
+    public boolean getInfo(String userName, String userPass){
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
+        return userName.equals(name) && userPass.equals(passwd);
+    }
+
 }

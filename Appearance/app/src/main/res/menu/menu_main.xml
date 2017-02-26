@@ -14,11 +14,7 @@
             android:orderInCategory="2"
             android:title="@string/stuff2"
             app:showAsAction="never" />
-        <item
-            android:id="@+id/stuff3"
-            android:orderInCategory="3"
-            android:title="@string/stuff3"
-            app:showAsAction="never" />
+
     </group>
 
 </menu>

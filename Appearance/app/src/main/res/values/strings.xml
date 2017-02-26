@@ -6,7 +6,6 @@
     <string name="entpass">Enter Password</string>
 
 
-    <string name="stuff">LOGIN</string>
+    <string name="stuff">SETTINGS</string>
     <string name="stuff2">LOGOUT</string>
-    <string name="stuff3">RESET</string>
 </resources>

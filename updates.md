@@ -19,4 +19,5 @@ appearance only allows selecting an option if logged in. it has menu with
 2. logout which clears shared preference
 3. Reset which deletes old tables (if existing) and creates new tables (with default values)
 
-appearance needs the core functionalities and merging with test1 and test2 is required
+appearance has the core functionalities
+appearance needs merging with test1 and test2

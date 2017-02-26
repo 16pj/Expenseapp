@@ -26,6 +26,8 @@ II. BACKEND: Python REST Server
 
 	3) create table limit_table(name VARCHAR(20), mon_lim INT);
 
+	4) create table user_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), password VARCHAR(20));
+
 
 
 III. REST DOUMENTATION:
