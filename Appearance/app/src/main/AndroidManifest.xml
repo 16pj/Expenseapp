@@ -22,6 +22,8 @@
             android:name=".Shoplist"
             android:label="@string/title_activity_shoplist" />
         <activity android:name=".Expense" />
+        <activity android:name=".Shoplist_offline" />
+        <activity android:name=".Expense_offline"/>
     </application>
 
 </manifest>
