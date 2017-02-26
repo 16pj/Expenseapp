@@ -104,7 +104,7 @@ public class Shoplist extends AppCompatActivity {
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
             thing = thing.replace(" ", "_");
-            String sURL = myURL + "/" + name+ "/shoplist/items/" + thing;
+            String sURL = myURL + "/" + name+ "/shoplist/items/" + "_"+thing;
             //mylist.add(thing);
             //adapter.notifyDataSetChanged();
             new Shop_GetUrlContentTask().execute(sURL, "ADD");
