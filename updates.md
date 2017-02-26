@@ -23,3 +23,6 @@ appearance has the core functionalities
 appearance is merged with testlist1 and testlist2
 appearance needs code optimization, bug fixing and additional features
 appearance beta version is ready.
+
+Spree is the name of the App
+Spree now has a SNAP mode, which saves the 

@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (output.equals("ON")) {
-            Toast.makeText(this, "Welcome To Spree, SNAP mode is ON. You are OFFLINE!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Welcome To Spree.\n SNAP mode is ON. You are OFFLINE!", Toast.LENGTH_LONG).show();
         }
         else if(output.equals("OFF")) {
             Toast.makeText(this, "Welcome To Spree!", Toast.LENGTH_SHORT).show();
@@ -204,8 +204,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
             else if (output.equals("ON")){
-                Intent j = new Intent(MainActivity.this, Expense_offline.class);
-                startActivity(j);
+                Toast.makeText(this, "SNAP MODE for Expense needs working.\nTry Going Online for now :)", Toast.LENGTH_LONG).show();
+                //Intent j = new Intent(MainActivity.this, Expense_offline.class);
+                //startActivity(j);
             }
         }
     }
