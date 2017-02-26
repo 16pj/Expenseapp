@@ -21,5 +21,5 @@ appearance only allows selecting an option if logged in. it has menu with
 
 appearance has the core functionalities
 appearance is merged with testlist1 and testlist2
-appearance needs bug fixing and additional features
+appearance needs code optimization, bug fixing and additional features
 appearance beta version is ready.
