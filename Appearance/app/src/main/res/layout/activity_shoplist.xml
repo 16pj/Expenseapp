@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+    android:fitsSystemWindows="true"
+    android:id="@+id/shopmain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.rpj.robin.appearance.Shoplist1">
+    tools:context="com.rpj.robin.appearance.Shoplist">
+
+
+    <TextView
+        android:text="SHOPLIST:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/shophead"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:textSize="18sp"
+        android:textStyle="normal|bold"
+        android:fontFamily="casual"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/listview"
+        android:background="#FF8491"
+        android:layout_above="@+id/editText"
+        android:layout_below="@id/shophead"
+        />
+
+    <Button
+        android:text="DEL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/REMOVE"
+        android:onClick="onRemove"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="18sp"
+        android:textStyle="normal|bold"
+        android:fontFamily="casual" />
 
 
     <Button
@@ -18,7 +54,10 @@
         android:id="@+id/PRIORITY"
         android:onClick="onPriority"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/ADD" />
+        android:layout_centerHorizontal="true"
+        android:textSize="18sp"
+        android:textStyle="normal|bold"
+        android:fontFamily="casual" />
 
     <Button
         android:text="Add"
@@ -26,37 +65,11 @@
         android:layout_height="wrap_content"
         android:id="@+id/ADD"
         android:onClick="onAdd"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        android:textStyle="normal|bold"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true" />
-
-    <Button
-        android:text="DEL"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/REMOVE"
-        android:onClick="onRemove"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/COST"
-        android:layout_alignParentEnd="true" />
-
-    <Button
-        android:text="COST"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/COST"
-        android:onClick="onCost"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/PRIORITY" />
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/listview"
-        android:background="#FF8491"
-        android:layout_above="@+id/editText"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="16dp"
-        />
 
     <EditText
         android:layout_width="wrap_content"
@@ -65,8 +78,14 @@
         android:ems="10"
         android:id="@+id/editText"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:layout_above="@+id/PRIORITY"
-        android:layout_centerHorizontal="true"
-        android:onClick="repopulate" />
+        android:onClick="repopulate"
+        android:background="#FFE4E6"
+        android:hint="item name"
+        android:fontFamily="casual"
+        android:layout_above="@+id/REMOVE"
+        android:layout_centerHorizontal="true" />
+
+
+
 
 </RelativeLayout>

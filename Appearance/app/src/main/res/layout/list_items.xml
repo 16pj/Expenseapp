@@ -6,4 +6,5 @@
         android:layout_height="match_parent"
         android:id="@+id/checkedview"
         android:layout_weight="1"
-        android:checkMark="?android:attr/listChoiceIndicatorMultiple" />
+        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+        android:fontFamily="sans-serif" />

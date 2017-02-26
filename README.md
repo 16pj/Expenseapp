@@ -13,6 +13,13 @@ II. BACKEND: Python REST Server
 	
 	Requires Python flask, flask_mysqldb modules and MySQL database
 
+	FIRST CREATE A TABLE TO STORE USER DATA
+
+	*create table user_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), password VARCHAR(20));
+
+
+	
+
 	Create 3 tables in a database:
 	1) expense_table
 	2) shoplist_table
@@ -26,10 +33,7 @@ II. BACKEND: Python REST Server
 
 	3) create table limit_table(name VARCHAR(20), mon_lim INT);
 
-	4) create table user_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), password VARCHAR(20));
-
-
-
+	 
 III. REST DOUMENTATION:
 
 	SHOPLIST:

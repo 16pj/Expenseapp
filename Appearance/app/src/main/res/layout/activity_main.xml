@@ -14,25 +14,33 @@
         android:text="Shoplist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="#ffffff"
         android:id="@+id/shopButton"
         android:layout_marginBottom="260dp"
         android:layout_marginTop="10dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:backgroundTint="@android:color/holo_red_dark"
-        android:onClick="onlist1" />
+        android:onClick="onlist1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="30sp"
+        android:textColor="#ffffff" />
 
     <Button
         android:text="Expenselist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="#ffffff"
         android:id="@+id/expenseButton"
         android:layout_marginTop="260dp"
         android:layout_marginBottom="10dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:background="?attr/colorAccent"
-        android:onClick="onlist2" />
+        android:onClick="onlist2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:fontFamily="casual"
+        android:textSize="30sp"
+        android:textStyle="normal|bold"
+        android:textColor="#ffffff" />
 </RelativeLayout>

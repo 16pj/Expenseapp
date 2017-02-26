@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
+    android:id="@+id/expensemain"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
@@ -11,13 +11,16 @@
     tools:context="com.rpj.robin.appearance.Expense">
 
     <TextView
-        android:text="Limit"
+        android:text="MONTH LIMIT:"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/limit"
         android:layout_alignParentTop="true"
         android:onClick="onLimit"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold" />
 
     <Button
         android:text="Add"
@@ -26,7 +29,10 @@
         android:id="@+id/ADD"
         android:onClick="onAdd"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp" />
 
     <Button
         android:text="DEL"
@@ -35,7 +41,10 @@
         android:id="@+id/REMOVE"
         android:onClick="onRemove"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp" />
 
     <ListView
         android:layout_width="match_parent"
@@ -57,7 +66,9 @@
         android:layout_alignStart="@+id/name"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
-        android:hint="COST" />
+        android:hint="Cost"
+        android:fontFamily="casual"
+        android:textSize="14sp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -72,7 +83,22 @@
         android:layout_centerHorizontal="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
-        android:hint="ITEM NAME" />
+        android:hint="Item Name"
+        android:fontFamily="casual"
+        android:textSize="14sp" />
+
+    <TextView
+        android:text="EXPENSE LIST"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/header"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        android:textStyle="normal|bold"
+        android:layout_alignBaseline="@+id/limit"
+        android:layout_alignBottom="@+id/limit"
+        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>

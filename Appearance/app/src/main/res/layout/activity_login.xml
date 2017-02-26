@@ -17,7 +17,10 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="108dp"
         android:id="@+id/textView"
-        android:layout_alignStart="@+id/button" />
+        android:layout_alignStart="@+id/button"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp" />
 
     <TextView
         android:text="Password"
@@ -26,7 +29,10 @@
         android:layout_below="@+id/textView"
         android:layout_alignStart="@+id/textView"
         android:layout_marginTop="52dp"
-        android:id="@+id/textView2" />
+        android:id="@+id/textView2"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -58,7 +64,9 @@
         android:onClick="onBack"
         android:layout_alignBaseline="@+id/button"
         android:layout_alignBottom="@+id/button"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold" />
 
     <Button
         android:text="Sign In"
@@ -68,7 +76,10 @@
         android:id="@+id/button"
         android:onClick="onSign"
         android:layout_below="@+id/editPass"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 
     <Button
         android:text="Sign Up"
@@ -78,7 +89,10 @@
         android:layout_alignBaseline="@+id/button"
         android:layout_alignBottom="@+id/button"
         android:layout_centerHorizontal="true"
-        android:onClick="onReg" />
+        android:onClick="onReg"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 
     <Button
         android:text="RESET"
@@ -89,5 +103,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:background="@android:color/holo_red_dark"
-        android:onClick="onRESET" />
+        android:onClick="onRESET"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        android:textStyle="normal|bold" />
 </RelativeLayout>

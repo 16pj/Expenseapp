@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Appearance</string>
+    <string name="app_name">Spree</string>
     <string name="title_activity_shoplist">Shoplist</string>
     <string name="title_activity_expense">Expense</string>
 

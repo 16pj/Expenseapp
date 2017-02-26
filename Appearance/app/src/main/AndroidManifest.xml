@@ -20,8 +20,7 @@
         <activity android:name=".Login" />
         <activity
             android:name=".Shoplist"
-            android:label="@string/title_activity_shoplist"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:label="@string/title_activity_shoplist" />
         <activity android:name=".Expense" />
     </application>
 
