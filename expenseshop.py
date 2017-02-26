@@ -5,7 +5,7 @@ import datetime, json
 #SERVER ON  rojo16.pythonanywhere.com
 
 app = Flask(__name__)
-'''
+
 app.config['MYSQL_HOST'] = 'rojo16.mysql.pythonanywhere-services.com'
 app.config['MYSQL_USER'] = 'rojo16'
 app.config['MYSQL_PASSWORD'] = 'hello123'
@@ -17,6 +17,7 @@ app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
 
+'''
 
 mysql = MySQL(app)
 
@@ -225,5 +226,5 @@ def delete_item(item, month, cost):
 
 
 if __name__ == "__main__":
-    #app.run('0.0.0.0', 35741, debug=True)
-    app.run('0.0.0.0', 3000, debug=True)
+    app.run('0.0.0.0', 35741, debug=True)
+    #app.run('0.0.0.0', 3000, debug=True)

@@ -50,8 +50,8 @@ public class Expense extends AppCompatActivity {
     private static int j;
     private String m_Text = "";
 
-    private String myURL = "http://192.168.1.25:35741";
-    //String myURL = "http://rojo16.pythonanywhere.com";
+    //private String myURL = "http://192.168.1.25:35741";
+    String myURL = "http://rojo16.pythonanywhere.com";
 
 
     @Override
