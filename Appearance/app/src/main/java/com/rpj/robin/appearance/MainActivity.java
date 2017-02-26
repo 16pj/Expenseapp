@@ -47,9 +47,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name =   sharedpref.getString("username", "");
-        if (name.isEmpty()) {
-                saveInfo("","");
+
+        SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
+        String output = snappref.getString("STATUS", "");
+
+        if (output.isEmpty()) {
+            SharedPreferences.Editor editor = snappref.edit();
+            editor.putString("STATUS", "OFF");
+            editor.apply();
         }
+
+        if (name.isEmpty()) {
+            saveInfo("","");
+        }
+
+        if (output.equals("ON")) {
+            Toast.makeText(this, "Welcome To Spree, SNAP mode is ON. You are OFFLINE!", Toast.LENGTH_SHORT).show();
+        }
+        else if(output.equals("OFF")) {
+            Toast.makeText(this, "Welcome To Spree!", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
 
@@ -102,12 +120,46 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
 
+            case R.id.stuff3:
+                if (item.isChecked())
+                    item.setChecked(false);
+                else item.setChecked(true);
+
+                SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
+                String output = snappref.getString("STATUS", "");
+
+                if (output.equals("OFF")) {
+                    Toast.makeText(this, "SNAP MODE ON.\nLAST SAVED LIST SHOWN", Toast.LENGTH_SHORT).show();
+                    SharedPreferences.Editor editor = snappref.edit();
+                    editor.putString("STATUS", "ON");
+                    editor.apply();
+                }
+                else  if (output.equals("ON")) {
+                    Toast.makeText(this, "SNAP MODE OFF.\nBACK ONLINE", Toast.LENGTH_SHORT).show();
+                    SharedPreferences.Editor editor = snappref.edit();
+                    editor.putString("STATUS", "OFF");
+                    editor.apply();
+                }
+
+                return true;
+
             default:
-                return false;
+                return true;
         }
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+
+
+
+    }
+
     public void onlist1(View view) {
+
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
@@ -118,8 +170,18 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
 
-        Intent i = new Intent(MainActivity.this, Shoplist.class);
-        startActivity(i);
+            SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
+            String output = snappref.getString("STATUS", "");
+
+            if (output.equals("OFF")){
+            Intent i = new Intent(MainActivity.this, Shoplist.class);
+            startActivity(i);
+            }
+            else if (output.equals("ON")){
+                Intent j = new Intent(MainActivity.this, Shoplist_offline.class);
+                startActivity(j);
+            }
+
     }
     }
 
@@ -134,9 +196,17 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please Login with Correct Credentials", Toast.LENGTH_SHORT).show();
         }
         else {
+            SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
+            String output = snappref.getString("STATUS", "");
 
-            Intent i = new Intent(MainActivity.this, Expense.class);
-            startActivity(i);
+            if (output.equals("OFF")){
+                Intent i = new Intent(MainActivity.this, Expense.class);
+                startActivity(i);
+            }
+            else if (output.equals("ON")){
+                Intent j = new Intent(MainActivity.this, Expense_offline.class);
+                startActivity(j);
+            }
         }
     }
 

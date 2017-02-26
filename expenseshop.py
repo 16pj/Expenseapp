@@ -57,7 +57,7 @@ def manage_items(user, item):
             ID = -1
         items = item.split(',')
         for i, j in enumerate(items):
-            cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' %(user, ID+1+i, j))
+            cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' %(user, ID+1+i, j.trim()))
             mysql.connection.commit()
         return "Added %s!" %item
 

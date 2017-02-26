@@ -35,6 +35,7 @@ public class Shoplist extends AppCompatActivity {
     private int i;
     private ListView listView;
     private EditText editText;
+    Sqealer sqealee;
     //String myURL = "http://192.168.1.25:35741";
 
     String myURL = "http://rojo16.pythonanywhere.com";
@@ -48,6 +49,7 @@ public class Shoplist extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listview);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
+        sqealee = new Sqealer(this, null, null, 1);
         mylist = new ArrayList<>();
         editText = (EditText) findViewById(R.id.editText);
 
@@ -71,6 +73,17 @@ public class Shoplist extends AppCompatActivity {
         repopulate(null);
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(!mylist.isEmpty()){
+            sqealee.truncater();
+            sqealee.addValues(mylist);
+        }
+
+    }
 
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
