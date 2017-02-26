@@ -19,6 +19,9 @@ public class Login extends AppCompatActivity {
 
     private EditText editname;
     private EditText editpass;
+    private String uname;
+    private String upass;
+
     private String myURL = "http://192.168.1.25:35741";
 
     //String myURL = "http://rojo16.pythonanywhere.com";
@@ -48,21 +51,22 @@ public class Login extends AppCompatActivity {
 
     public void onSign(View view) {
 
-        String id = editname.getText().toString();
-        String pass = editpass.getText().toString();
+        uname = editname.getText().toString();
+        upass = editpass.getText().toString();
 
-        if (id.equals("") || pass.equals("")){
+        if (uname.equals("") || upass.equals("")){
             Toast.makeText(this, "Invalid ID/PASS", Toast.LENGTH_SHORT).show();
         }
         else {
-            String sURL = myURL + "/users/" + id + "/" + pass;
+            String sURL = myURL + "/users/" + uname + "/" + upass;
             new GetUrlContentTask().execute(sURL, "VERIFY_USER");
         }
 
     }
 
-    public void onCreateTables(String user){
-        String sURL = myURL + "/RESET/" + user;
+    public void onCreateTables(){
+        uname = editname.getText().toString();
+        String sURL = myURL + "/RESET/" + uname;
         new GetUrlContentTask().execute(sURL, "CREATE_TABLES");
     }
 
@@ -70,7 +74,6 @@ public class Login extends AppCompatActivity {
         Intent i = new Intent(this, MainActivity.class);
         startActivity(i);
     }
-
 
     public void onRESET(View view){
 
@@ -193,10 +196,14 @@ public class Login extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
 
-           if (result.trim().equals("CREATED")){
-               Toast.makeText(Login.this, "SUCCESSFULLY REGISTERED", Toast.LENGTH_LONG).show();
-               onCreateTables(editname.getText().toString());
+            if (result == null)
+            {Toast.makeText(Login.this, "Something went wrong!", Toast.LENGTH_LONG).show();
+            return;}
 
+
+            if (result.trim().equals("CREATED")){
+               Toast.makeText(Login.this, "SUCCESSFULLY REGISTERED", Toast.LENGTH_LONG).show();
+               onCreateTables();
            }
            else if(result.trim().equals("EXISTS")){
                Toast.makeText(Login.this, "USERNAME TAKEN! TRY ANOTHER.", Toast.LENGTH_SHORT).show();
@@ -214,7 +221,7 @@ public class Login extends AppCompatActivity {
            }
 
            else if(result.trim().equals("REFRESHED")){
-               Toast.makeText(Login.this, "READY! LOGIN TO PLAY!", Toast.LENGTH_SHORT).show();
+               Toast.makeText(Login.this, "READY! SIGN IN TO PLAY!", Toast.LENGTH_SHORT).show();
            }
 
            else if(result.trim().equals("FAILED")){

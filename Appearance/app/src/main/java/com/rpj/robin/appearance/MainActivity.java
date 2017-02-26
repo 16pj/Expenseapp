@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private String enter;
-    private String myURL = "http://192.168.1.25:3000";
+    private String myURL = "http://192.168.1.25:35741";
 
     //String myURL = "http://rojo16.pythonanywhere.com";
 
