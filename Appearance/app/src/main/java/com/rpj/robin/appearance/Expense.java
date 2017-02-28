@@ -162,6 +162,7 @@ public class Expense extends AppCompatActivity {
         for (String item:selecteditems) {
             String thing = itemnames.get(selecteditems.indexOf(item));
             //int date = itemdates.get(item);
+            //nothing
             thing = thing.replace(" ", "_");
             String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + itemdates.get(selecteditems.indexOf(item)) + "/0";
             new Expense_GetUrlContentTask().execute(sURL, "DELETE");
