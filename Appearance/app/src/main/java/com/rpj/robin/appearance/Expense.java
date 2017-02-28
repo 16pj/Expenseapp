@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -73,19 +74,29 @@ public class Expense extends AppCompatActivity {
         editName = (EditText) findViewById(R.id.name);
         editNum = (EditText) findViewById(R.id.num);
 
-        adapter = new ArrayAdapter<String>(this, R.layout.expense_items, R.id.checkedview, mylist);
+        adapter = new ArrayAdapter<String>(this, R.layout.expense_items, R.id.checkedview, itemnames);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String item = ((TextView) view).getText().toString();
 
-                if (selecteditems.contains(item)){
-                    selecteditems.remove(item);
+                CheckedTextView mybox = (CheckedTextView) view.findViewById(R.id.checkedview);
+                String mytext = mybox.getText().toString();
+
+
+                if (selecteditems.contains(mytext)){
+                    selecteditems.remove(mytext);
+                    if(mybox.isChecked())
+                    mybox.setChecked(false);
+                    Toast.makeText(Expense.this, "Removed " + mytext, Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    selecteditems.add(item);
+                    selecteditems.add(mytext);
+                    if (!mybox.isChecked())
+                    mybox.setChecked(true);
+                    Toast.makeText(Expense.this, "Added " + mytext, Toast.LENGTH_SHORT).show();
+
                 }
                 // }catch (Exception e){
                 //   e.printStackTrace();
@@ -154,18 +165,18 @@ public class Expense extends AppCompatActivity {
 
     public void onRemove(View view){
 
-        if(mylist.size() == 0) return;
+        if(itemnames.size() == 0) return;
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String shared_name = sharedpref.getString("username", "");
 
         for (String item:selecteditems) {
-            String thing = itemnames.get(selecteditems.indexOf(item));
+            String thing = item;
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + itemdates.get(selecteditems.indexOf(item)) + "/0";
+            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + itemdates.get(itemnames.indexOf(item)) + "/0";
             new Expense_GetUrlContentTask().execute(sURL, "DELETE");
-            mylist.remove(item);
+            itemnames.remove(item);
         }
         listView.clearChoices();
         selecteditems.clear();
@@ -373,7 +384,6 @@ public class Expense extends AppCompatActivity {
                         temp = temp + " ";
                     }
 
-                    mylist.add(jsonArray.getJSONObject(i).getString("name") + temp + jsonArray.getJSONObject(i).getString("cost") + " SEK");
                     itemnames.add(jsonArray.getJSONObject(i).getString("name"));
                     itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
                     itemdates.add(jsonArray.getJSONObject(i).getString("date"));
