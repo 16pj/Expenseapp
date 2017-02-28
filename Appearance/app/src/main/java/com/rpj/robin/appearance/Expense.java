@@ -170,7 +170,7 @@ public class Expense extends AppCompatActivity {
             String thing = item.name;
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + itemdates.get(itemnames.indexOf(item.name)) + "/0";
+            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK","");
             new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             mylist.remove(item);
         }
