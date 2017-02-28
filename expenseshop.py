@@ -140,6 +140,8 @@ def get_all_expenses(user):
         thing =dict(zip(["name", "cost", "date", "category"], i))
         thing['limit'] = lim
         spring.append(thing)
+	thing['total'] = mon_val[0]
+        spring.append(thing)
     return (json.dumps(spring))
 
 

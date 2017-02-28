@@ -380,12 +380,14 @@ public class Expense extends AppCompatActivity {
                         temp = temp + " ";
                     }
 
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
                     itemnames.add(jsonArray.getJSONObject(i).getString("name"));
                     itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
                     itemdates.add(jsonArray.getJSONObject(i).getString("date"));
                     itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
                 }
+
+                mylist.add(new Expense_item("MONTH TOTAL", jsonArray.getJSONObject(jsonArray.length()-1).getString("total") + " SEK", jsonArray.getJSONObject(i-1).getString("date")));
                 //limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(0).getString("limit")));
                 adapter.notifyDataSetChanged();
             }catch (Exception e){
