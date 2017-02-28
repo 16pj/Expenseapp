@@ -380,7 +380,7 @@ public class Expense extends AppCompatActivity {
                         temp = temp + " ";
                     }
 
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost") + " SEK"));
+                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
                     itemnames.add(jsonArray.getJSONObject(i).getString("name"));
                     itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
                     itemdates.add(jsonArray.getJSONObject(i).getString("date"));
