@@ -57,22 +57,6 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="number"
-        android:ems="10"
-        android:id="@+id/num"
-        android:onClick="repopulate"
-        android:background="#8DB600"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/name"
-        android:layout_toEndOf="@+id/ADD"
-        android:layout_toStartOf="@+id/REMOVE"
-        android:hint="Cost"
-        android:fontFamily="casual"
-        android:textSize="14sp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
         android:onClick="repopulate"
@@ -99,6 +83,21 @@
         android:layout_alignBaseline="@+id/limit"
         android:layout_alignBottom="@+id/limit"
         android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:id="@+id/num"
+        android:onClick="repopulate"
+        android:background="#8DB600"
+        android:hint="Cost"
+        android:fontFamily="casual"
+        android:textSize="14sp"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/ADD"
+        android:layout_toStartOf="@+id/REMOVE" />
 
 
 </RelativeLayout>
