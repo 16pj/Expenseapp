@@ -29,7 +29,7 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
          else next_item = getItem(position);
 
          int sum = 0;
-
+       
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
            convertView = LayoutInflater.from(getContext()).inflate(R.layout.expense_items, parent, false);
@@ -60,7 +60,6 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
          else {
              headingview.setVisibility(View.INVISIBLE);
          }
-
         // Return the completed view to render on screen
         return convertView;
     }

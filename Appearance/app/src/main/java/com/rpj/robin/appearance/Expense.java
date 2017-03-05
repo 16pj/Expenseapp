@@ -75,6 +75,7 @@ public class Expense extends AppCompatActivity {
         editNum = (EditText) findViewById(R.id.num);
 
         adapter = new CustomUsersAdapter(this, mylist);
+
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -161,7 +162,7 @@ public class Expense extends AppCompatActivity {
 
     public void onRemove(View view){
 
-        if(mylist.size() == 0) return;
+        if(itemnames.size() == 0) return;
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String shared_name = sharedpref.getString("username", "");
@@ -171,8 +172,9 @@ public class Expense extends AppCompatActivity {
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
             String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK","");
+
             new Expense_GetUrlContentTask().execute(sURL, "DELETE");
-            mylist.remove(item);
+            itemnames.remove(item);
         }
         listView.clearChoices();
         selecteditems.clear();
@@ -381,6 +383,7 @@ public class Expense extends AppCompatActivity {
                     }
 
                     mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+
                     itemnames.add(jsonArray.getJSONObject(i).getString("name"));
                     itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
                     itemdates.add(jsonArray.getJSONObject(i).getString("date"));
