@@ -6,18 +6,18 @@ import datetime, json
 
 app = Flask(__name__)
 
-'''
+
 app.config['MYSQL_HOST'] = 'rojo16.mysql.pythonanywhere-services.com'
 app.config['MYSQL_USER'] = 'rojo16'
 app.config['MYSQL_PASSWORD'] = 'hello123'
 app.config['MYSQL_DB'] = 'rojo16$testdb'
-'''
 
+'''
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
-
+'''
 
 mysql = MySQL(app)
 
@@ -57,7 +57,7 @@ def manage_items(user, item):
             ID = -1
         items = item.split(',')
         for i, j in enumerate(items):
-            cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' %(user, ID+1+i, j.trim()))
+            cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' %(user, ID+1+i, j))
             mysql.connection.commit()
         return "Added %s!" %item
 
@@ -132,17 +132,19 @@ def get_all_expenses(user):
     try:
         lim = str(lim_val[0] - mon_val[0])
     except:
-        pass
+        lim = str(lim_val[0])
     sting = [i for i in retVal]
     # sting = [i for i in sting]
     spring = []
     for i in sting:
         thing =dict(zip(["name", "cost", "date", "category"], i))
         thing['limit'] = lim
-        spring.append(thing)
-	thing['total'] = mon_val[0]
-        spring.append(thing)
-    return (json.dumps(spring))
+	thing['total'] = str(mon_val[0])
+	spring.append(thing)
+    if len(sting) != 0:
+         return (json.dumps(spring))
+    else:
+         return json.dumps([{'limit':lim}])
 
 
 @app.route('/<string:user>/expense/items1')
@@ -170,7 +172,7 @@ def get_all_expenses1(user):
     for i in sting:
         thing =dict(zip(["name", "cost", "date", "category"], i))
         thing['limit'] = lim
-        spring.append(thing)
+
     if len(sting) != 0:
         return (json.dumps(spring))
     else:
