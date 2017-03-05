@@ -28,8 +28,8 @@ import java.util.ArrayList;
 
 public class Expense extends AppCompatActivity {
 
-    private ArrayList<String> mylist;
-    private ArrayList<String> selecteditems;
+    private ArrayList<Expense_item> mylist;
+    private ArrayList<Expense_item> selecteditems;
 
     private ArrayList<String> itemnames;
     private ArrayList<String> itemdates;
@@ -39,7 +39,7 @@ public class Expense extends AppCompatActivity {
     private TextView limit;
 
 
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter<Expense_item> adapter;
     private ListView listView;
     private EditText editName;
     private EditText editNum;
@@ -74,7 +74,8 @@ public class Expense extends AppCompatActivity {
         editName = (EditText) findViewById(R.id.name);
         editNum = (EditText) findViewById(R.id.num);
 
-        adapter = new ArrayAdapter<String>(this, R.layout.expense_items, R.id.checkedview, itemnames);
+        adapter = new CustomUsersAdapter(this, mylist);
+
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -82,21 +83,17 @@ public class Expense extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 CheckedTextView mybox = (CheckedTextView) view.findViewById(R.id.checkedview);
-                String mytext = mybox.getText().toString();
 
-
-                if (selecteditems.contains(mytext)){
-                    selecteditems.remove(mytext);
+                if (selecteditems.contains(mylist.get(position))){
+                    selecteditems.remove(mylist.get(position));
                     if(mybox.isChecked())
-                    mybox.setChecked(false);
-                    Toast.makeText(Expense.this, "Removed " + mytext, Toast.LENGTH_SHORT).show();
+                        mybox.setChecked(false);
+
                 }
                 else {
-                    selecteditems.add(mytext);
-                    if (!mybox.isChecked())
-                    mybox.setChecked(true);
-                    Toast.makeText(Expense.this, "Added " + mytext, Toast.LENGTH_SHORT).show();
-
+                    selecteditems.add(mylist.get(position));
+                    if(!mybox.isChecked())
+                        mybox.setChecked(true);
                 }
                 // }catch (Exception e){
                 //   e.printStackTrace();
@@ -170,11 +167,12 @@ public class Expense extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String shared_name = sharedpref.getString("username", "");
 
-        for (String item:selecteditems) {
-            String thing = item;
+        for (Expense_item item:selecteditems) {
+            String thing = item.name;
             //int date = itemdates.get(item);
             thing = thing.replace(" ", "_");
-            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + itemdates.get(itemnames.indexOf(item)) + "/0";
+            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK","");
+
             new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             itemnames.remove(item);
         }
@@ -384,11 +382,15 @@ public class Expense extends AppCompatActivity {
                         temp = temp + " ";
                     }
 
+                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+
                     itemnames.add(jsonArray.getJSONObject(i).getString("name"));
                     itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
                     itemdates.add(jsonArray.getJSONObject(i).getString("date"));
                     itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
                 }
+
+                mylist.add(new Expense_item("MONTH TOTAL", jsonArray.getJSONObject(jsonArray.length()-1).getString("total") + " SEK", jsonArray.getJSONObject(i-1).getString("date")));
                 //limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(0).getString("limit")));
                 adapter.notifyDataSetChanged();
             }catch (Exception e){

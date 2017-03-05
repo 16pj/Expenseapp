@@ -114,7 +114,7 @@ def price_items(user, item):
 
 #############################EXPENSE PART#####################################
 
-@app.route('/<string:user>/expense/items1')
+@app.route('/<string:user>/expense/items')
 def get_all_expenses(user):
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
@@ -140,10 +140,12 @@ def get_all_expenses(user):
         thing =dict(zip(["name", "cost", "date", "category"], i))
         thing['limit'] = lim
         spring.append(thing)
+	thing['total'] = mon_val[0]
+        spring.append(thing)
     return (json.dumps(spring))
 
 
-@app.route('/<string:user>/expense/items')
+@app.route('/<string:user>/expense/items1')
 def get_all_expenses1(user):
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
