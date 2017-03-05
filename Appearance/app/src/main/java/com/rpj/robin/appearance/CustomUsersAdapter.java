@@ -27,6 +27,9 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
          if(position != 0) next_item = getItem(position-1);
          else next_item = getItem(position);
+
+         int sum = 0;
+
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
            convertView = LayoutInflater.from(getContext()).inflate(R.layout.expense_items, parent, false);
@@ -40,7 +43,6 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
         tvname.setText(expense_item.name);
         tvcost.setText(expense_item.cost);
 
-         String hello = expense_item.name;
          String month = expense_item.date.substring(2);
          String year = "20" + expense_item.date.substring(0,2);
          month = months[Integer.parseInt(month)-1];
@@ -50,11 +52,14 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
                 headingview.setVisibility(View.VISIBLE);
          }
          else if(!expense_item.date.equals(next_item.date)){
+
              headingview.setText(month + ", " + year);
              headingview.setVisibility(View.VISIBLE);
-         }
-         else headingview.setVisibility(View.INVISIBLE);
 
+         }
+         else {
+             headingview.setVisibility(View.INVISIBLE);
+         }
 
         // Return the completed view to render on screen
         return convertView;
