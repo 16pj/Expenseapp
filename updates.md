@@ -25,4 +25,5 @@ appearance needs code optimization, bug fixing and additional features
 appearance beta version is ready.
 
 Spree is the name of the App
-Spree now has a SNAP mode, which saves the 
+Spree now has a SNAP mode, which saves the last retrieved list
+Spree needs work on security of password, operations and refinemet in code
