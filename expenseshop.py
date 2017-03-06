@@ -114,7 +114,7 @@ def price_items(user, item):
 
 #############################EXPENSE PART#####################################
 
-@app.route('/<string:user>/expense/items')
+@app.route('/<string:user>/expense/items1')
 def get_all_expenses(user):
     cur = mysql.connection.cursor()
     now = datetime.datetime.now()
@@ -191,8 +191,7 @@ def get_batch_expenses(user, batch):
 
 
 
-
-@app.route('/<string:user>/expense/items1')
+@app.route('/<string:user>/expense/items')
 def get_all_expenses1(user):
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
@@ -217,11 +216,13 @@ def get_all_expenses1(user):
     for i in sting:
         thing =dict(zip(["name", "cost", "date", "category"], i))
         thing['limit'] = lim
-
+        spring.append(thing)
     if len(sting) != 0:
         return (json.dumps(spring))
     else:
         return json.dumps([{'limit':lim}])
+
+
 
 
 

@@ -38,7 +38,7 @@ public class Shoplist extends AppCompatActivity {
     Sqealer sqealee;
     String myURL = "http://192.168.1.11:35741";
 
-    //String myURL = "http://rojo16.pythonanywhere.com";
+   // String myURL = "http://rojo16.pythonanywhere.com";
 
 
     @Override

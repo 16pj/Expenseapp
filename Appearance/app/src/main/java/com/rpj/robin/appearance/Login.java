@@ -24,7 +24,7 @@ public class Login extends AppCompatActivity {
 
     private String myURL = "http://192.168.1.11:35741";
 
-   // String myURL = "http://rojo16.pythonanywhere.com";
+   //String myURL = "http://rojo16.pythonanywhere.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
