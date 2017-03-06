@@ -47,7 +47,9 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
          String month = expense_item.date.substring(2);
          String year = "20" + expense_item.date.substring(0,2);
-         month = months[Integer.parseInt(month)-1];
+
+         if (month.equals("00")) month = "LOAD MORE";
+         else month = months[Integer.parseInt(month)-1];
 
          if(position == getCount()-1){
              more.setVisibility(View.VISIBLE);
@@ -57,12 +59,15 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
 
          if(position==0){
-                headingview.setText(month + ", " + year);
+
+             if (!month.equals("LOAD MORE")) headingview.setText(month + ", " + year);
+             else headingview.setText(month);
                 headingview.setVisibility(View.VISIBLE);
          }
          else if(!expense_item.date.equals(next_item.date)){
 
-             headingview.setText(month + ", " + year);
+             if (!month.equals("LOAD MORE")) headingview.setText(month + ", " + year);
+             else headingview.setText(month);
              headingview.setVisibility(View.VISIBLE);
 
          }
@@ -72,4 +77,6 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
         // Return the completed view to render on screen
         return convertView;
     }
+
+
 }

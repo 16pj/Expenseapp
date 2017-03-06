@@ -160,12 +160,12 @@ def get_batch_expenses(user, batch):
     start = get_sub_date(month, batch_start+3)
     end  = get_sub_date(month, batch_start)
 
-    '''print ("Start\n")
+    print ("Start\n")
     print (start)
     print("End\n")
     print (end)
-'''
-    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month >= %s and month < %s order by month DESC''' % (user, start, end))
+
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
     retVal = cur.fetchall()
     sting1 = ""
     cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
@@ -271,9 +271,9 @@ def add_expense(user, item, cost, category):
         ID = maxid[0]
         if not maxid[0]:
             ID = -1
-        now = datetime.datetime.now()
-        month = "%d%d" %(now.year, now.month)
-        month = month[2:]
+    	now = datetime.datetime.now()
+
+    	month = int(now.strftime("%y%m"))
         cur.execute('''INSERT INTO %s_expense_table(id, name, cost, month, category) value (%s ,"%s", %s, %s, "%s")''' %(user, ID+1, item, cost, month, category))
         mysql.connection.commit()
         return "Added %s!" %item
@@ -428,12 +428,12 @@ def delete_user(name):
 ########################OTHER FUNCTIONS ###########################
 
 def get_sub_date(date, num):
-    YY = date / 100 - num / 100
-    MM = date % 100 - num % 100
-    while (MM < 0):
+    YY = date / 100 - num / 12
+    MM = date % 100 - num % 12
+    while (MM <= 0):
         MM = MM + 12
         YY -= 1
-    return YY * 100 + MM%12+1
+    return YY * 100 + MM
 
 
 
