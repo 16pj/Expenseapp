@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
         // Lookup view for data population
         TextView tvname = (TextView) convertView.findViewById(R.id.checkedview);
         TextView tvcost = (TextView) convertView.findViewById(R.id.separator);
+        Button more = (Button) convertView.findViewById(R.id.more);
 
          TextView headingview = (TextView) convertView.findViewById(R.id.heading);
         // Populate the data into the template view using the data object
@@ -46,6 +48,13 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
          String month = expense_item.date.substring(2);
          String year = "20" + expense_item.date.substring(0,2);
          month = months[Integer.parseInt(month)-1];
+
+         if(position == getCount()-1){
+             more.setVisibility(View.VISIBLE);
+         }
+         else
+             more.setVisibility(View.INVISIBLE);
+
 
          if(position==0){
                 headingview.setText(month + ", " + year);

@@ -22,9 +22,9 @@ public class Login extends AppCompatActivity {
     private String uname;
     private String upass;
 
-    //private String myURL = "http://192.168.1.25:35741";
+    private String myURL = "http://192.168.1.11:35741";
 
-    String myURL = "http://rojo16.pythonanywhere.com";
+   // String myURL = "http://rojo16.pythonanywhere.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

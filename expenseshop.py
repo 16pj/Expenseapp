@@ -6,7 +6,7 @@ import datetime, json
 
 app = Flask(__name__)
 
-
+'''
 app.config['MYSQL_HOST'] = 'rojo16.mysql.pythonanywhere-services.com'
 app.config['MYSQL_USER'] = 'rojo16'
 app.config['MYSQL_PASSWORD'] = 'hello123'
@@ -17,7 +17,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
-'''
+
 
 mysql = MySQL(app)
 
@@ -117,13 +117,12 @@ def price_items(user, item):
 @app.route('/<string:user>/expense/items')
 def get_all_expenses(user):
     cur = mysql.connection.cursor()
-    cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month >= 1701 ORDER BY month''' % user)
     retVal = cur.fetchall()
     sting1 = ""
 
     now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
+    month = now.strftime("%y%m")
     cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
     lim_val = cur.fetchone()
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
@@ -145,6 +144,52 @@ def get_all_expenses(user):
          return (json.dumps(spring))
     else:
          return json.dumps([{'limit':lim}])
+
+
+
+
+
+@app.route('/<string:user>/expense/batch/<int:batch>')
+def get_batch_expenses(user, batch):
+    cur = mysql.connection.cursor()
+    now = datetime.datetime.now()
+
+    month = int(now.strftime("%y%m"))
+    batch_start = batch*3
+
+    start = get_sub_date(month, batch_start+3)
+    end  = get_sub_date(month, batch_start)
+
+    '''print ("Start\n")
+    print (start)
+    print("End\n")
+    print (end)
+'''
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month >= %s and month < %s order by month DESC''' % (user, start, end))
+    retVal = cur.fetchall()
+    sting1 = ""
+    cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
+    mon_val = cur.fetchone()
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        lim = str(lim_val[0])
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+	thing['total'] = str(mon_val[0])
+	spring.append(thing)
+    if len(sting) != 0:
+         return (json.dumps(spring))
+    else:
+         return json.dumps([{'limit':lim}])
+
+
 
 
 @app.route('/<string:user>/expense/items1')
@@ -379,7 +424,15 @@ def delete_user(name):
 
         return "Did nothing!"
 
+########################OTHER FUNCTIONS ###########################
 
+def get_sub_date(date, num):
+    YY = date / 100 - num / 100
+    MM = date % 100 - num % 100
+    while (MM < 0):
+        MM = MM + 12
+        YY -= 1
+    return YY * 100 + MM%12+1
 
 
 

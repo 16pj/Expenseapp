@@ -1,13 +1,16 @@
 package com.rpj.robin.appearance;
 
+import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.IntegerRes;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.view.DragEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +20,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.json.JSONArray;
 
 import java.io.BufferedReader;
@@ -24,6 +30,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class Expense extends AppCompatActivity {
@@ -35,6 +42,8 @@ public class Expense extends AppCompatActivity {
     private ArrayList<String> itemdates;
     private ArrayList<String> itemcosts;
     private ArrayList<String> itemcategory;
+    private String heading_text;
+    private int batch;
 
     private TextView limit;
 
@@ -43,6 +52,7 @@ public class Expense extends AppCompatActivity {
     private ListView listView;
     private EditText editName;
     private EditText editNum;
+    private TextView heading;
     private static String lim;
     private static String Str1;
     private static String Str2;
@@ -51,8 +61,11 @@ public class Expense extends AppCompatActivity {
     private static int j;
     private String m_Text = "";
 
-    //private String myURL = "http://192.168.1.25:35741";
-    String myURL = "http://rojo16.pythonanywhere.com";
+    private String myURL = "http://192.168.1.11:35741";
+    //String myURL = "http://rojo16.pythonanywhere.com";
+
+
+
 
 
     @Override
@@ -69,6 +82,8 @@ public class Expense extends AppCompatActivity {
         itemcosts = new ArrayList<>();
         itemcategory = new ArrayList<>();
         limit = (TextView) findViewById(R.id.limit);
+        batch = 1;
+        heading = (TextView) findViewById(R.id.heading);
 
 
         editName = (EditText) findViewById(R.id.name);
@@ -102,8 +117,8 @@ public class Expense extends AppCompatActivity {
             }
         });
 
-
         repopulate(null);
+
 
     }
 
@@ -113,13 +128,29 @@ public class Expense extends AppCompatActivity {
 
         String sURL = myURL + "/" + name + "/expense/items";
         mylist.clear();
+        batch=0;
         itemnames.clear();
         itemcosts.clear();
         itemdates.clear();
         adapter.notifyDataSetChanged();
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
-        adapter.notifyDataSetChanged();
+      //  adapter.notifyDataSetChanged();
 
+    }
+
+    public void overpopulate(View view){
+        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+        String name = sharedpref.getString("username", "");
+
+        String sURL = myURL + "/" + name + "/expense/batch/" + batch;
+    //    mylist.clear();
+        itemnames.clear();
+        itemcosts.clear();
+        itemdates.clear();
+    //    adapter.notifyDataSetChanged();
+        new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+      //  adapter.notifyDataSetChanged();
+        batch +=1;
     }
 
 
@@ -374,7 +405,10 @@ public class Expense extends AppCompatActivity {
 
             try {
                 JSONArray jsonArray = new JSONArray(result);
-                limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(jsonArray.length()-1).getString("limit")));
+                limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length()-1).getString("limit")));
+
+                heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length()-1).getString("total") + " SEK";
+                heading.setText(heading_text);
 
                 for (i =0; i< jsonArray.length(); i++) {
                     temp = "";
@@ -390,7 +424,8 @@ public class Expense extends AppCompatActivity {
                     itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
                 }
 
-                mylist.add(new Expense_item("MONTH TOTAL", jsonArray.getJSONObject(jsonArray.length()-1).getString("total") + " SEK", jsonArray.getJSONObject(i-1).getString("date")));
+
+
                 //limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(0).getString("limit")));
                 adapter.notifyDataSetChanged();
             }catch (Exception e){
