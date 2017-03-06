@@ -117,12 +117,12 @@ def price_items(user, item):
 @app.route('/<string:user>/expense/items')
 def get_all_expenses(user):
     cur = mysql.connection.cursor()
-    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month >= 1701 ORDER BY month''' % user)
+    now = datetime.datetime.now()
+    month = now.strftime("%y%m")
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month = %s ORDER BY month''' % (user,month-3))
     retVal = cur.fetchall()
     sting1 = ""
 
-    now = datetime.datetime.now()
-    month = now.strftime("%y%m")
     cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
     lim_val = cur.fetchone()
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))

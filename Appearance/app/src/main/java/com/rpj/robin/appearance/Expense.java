@@ -126,9 +126,9 @@ public class Expense extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
 
-        String sURL = myURL + "/" + name + "/expense/items";
+        String sURL = myURL + "/" + name + "/expense/batch/0";
         mylist.clear();
-        batch=0;
+        batch=1;
         itemnames.clear();
         itemcosts.clear();
         itemdates.clear();
