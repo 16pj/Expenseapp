@@ -165,7 +165,7 @@ def get_batch_expenses(user, batch):
     print("End\n")
     print (end)
 
-    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
+    cur.execute('''SELECT id, name, cost, month, category from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
     retVal = cur.fetchall()
     sting1 = ""
     cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
@@ -205,7 +205,7 @@ def get_all_expenses1(user):
     lim_val = cur.fetchone()
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
     mon_val = cur.fetchone()
-    lim = ""
+    #lim = ""
     try:
         lim = str(lim_val[0] - mon_val[0])
     except:
@@ -214,7 +214,7 @@ def get_all_expenses1(user):
     # sting = [i for i in sting]
     spring = []
     for i in sting:
-        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing =dict(zip(["id","name", "cost", "date", "category"], i))
         thing['limit'] = lim
         spring.append(thing)
     if len(sting) != 0:
@@ -248,7 +248,7 @@ def get_category_month_expenses(user, month, category):
     return str(retVal)
 
 
-
+"""
 @app.route('/<string:user>/expense/limit_bal')
 def get_month_limit(user):
     cur = mysql.connection.cursor()
@@ -260,7 +260,7 @@ def get_month_limit(user):
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
     mon_val = cur.fetchone()
     return str(lim_val[0]-mon_val[0])
-
+"""
 
 
 @app.route('/<string:user>/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
@@ -271,9 +271,9 @@ def add_expense(user, item, cost, category):
         ID = maxid[0]
         if not maxid[0]:
             ID = -1
-    	now = datetime.datetime.now()
+        now = datetime.datetime.now()
 
-    	month = int(now.strftime("%y%m"))
+        month = int(now.strftime("%y%m"))
         cur.execute('''INSERT INTO %s_expense_table(id, name, cost, month, category) value (%s ,"%s", %s, %s, "%s")''' %(user, ID+1, item, cost, month, category))
         mysql.connection.commit()
         return "Added %s!" %item
@@ -288,7 +288,7 @@ def update_limit(user, mon_lim):
 
 
 
-@app.route('/<string:user>/expense/items/<string:item>/<int:month>/<int:cost>', methods=['DELETE', 'PUT'])
+@app.route('/<string:user>/expense/items/<string:item>/<int:month>/<int:cost>', methods=['DELETE'])
 def delete_item(user, item, month, cost):
     cur = mysql.connection.cursor()
 
@@ -299,11 +299,16 @@ def delete_item(user, item, month, cost):
             cur.execute('''DELETE from %s_expense_table where name = "%s" and month = "%s" and cost = "%s"''' %(user, item, month, cost))
         mysql.connection.commit()
         return "Deleted %s!" %item
-    elif request.method == 'PUT':
-        cur.execute('''UPDATE expense_table set cost = "%s" where name = "%s" and month = "%s"''' % (cost, item, month))
-        mysql.connection.commit()
-        return "Updated %s!" %item
+    return "Done nothing!"
 
+
+@app.route('/<string:user>/expense/items/<int:idee>:<string:item>:<int:month>:<int:cost>:<string:category>', methods=['PUT'])
+def edit_item(user, idee, item, month, cost, category):
+        cur = mysql.connection.cursor()
+        if request.method == 'PUT':
+            cur.execute('''UPDATE %s_expense_table set name = "%s", cost = "%s", month = "%s", category = "%s" where id = %d''' % (user, item, cost, month, category, idee))
+            mysql.connection.commit()
+        return "Updated %s!" %item
 
 
 #######################USER INFO#################################################
@@ -391,7 +396,7 @@ def reset_tables(name):
             cur.execute('''DROP TABLE IF EXISTS `%s`''' % (name+"_limit_table"))
             mysql.connection.commit()
 
-            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20))''' % (name + "_expense_table"))
+            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT)''' % (name + "_expense_table"))
             mysql.connection.commit()
 
             cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10))''' % (name + "_shoplist_table"))

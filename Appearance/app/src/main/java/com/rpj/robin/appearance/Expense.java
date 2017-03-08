@@ -315,14 +315,14 @@ public class Expense extends AppCompatActivity {
                     heading.setText(heading_text);
 
                 for (int i =0; i< jsonArray.length(); i++) {
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id").replace("_", " "),jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
                 }
                     test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
 
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                mylist.add(new Expense_item("","",test));
+                mylist.add(new Expense_item("","","",test));
                 adapter.notifyDataSetChanged();
             }catch (Exception e){
                 e.printStackTrace();
