@@ -160,11 +160,11 @@ def get_batch_expenses(user, batch):
     start = get_sub_date(month, batch_start+3)
     end  = get_sub_date(month, batch_start)
 
-    print ("Start\n")
+    '''print ("Start\n")
     print (start)
     print("End\n")
     print (end)
-
+'''
     cur.execute('''SELECT id, name, cost, month, category from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
     retVal = cur.fetchall()
     sting1 = ""
@@ -180,10 +180,10 @@ def get_batch_expenses(user, batch):
     # sting = [i for i in sting]
     spring = []
     for i in sting:
-        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing =dict(zip(["id", "name", "cost", "date", "category"], i))
         thing['limit'] = lim
-	thing['total'] = str(mon_val[0])
-	spring.append(thing)
+        thing['total'] = str(mon_val[0])
+        spring.append(thing)
     if len(sting) != 0:
          return (json.dumps(spring))
     else:

@@ -13,9 +13,13 @@ import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.json.JSONArray;
@@ -37,8 +41,12 @@ public class Expense extends AppCompatActivity {
     private EditText editNum;
     private TextView heading;
     private String m_Text = "";
+    private String Selected_month = "";
+    private String Selected_category = "DEFAULT";
 
-    private String myURL = "http://192.168.1.11:35741";
+
+    private String myURL = "http://192.168.1.21:35741";
+
     //String myURL = "http://rojo16.pythonanywhere.com";
 
 
@@ -57,6 +65,16 @@ public class Expense extends AppCompatActivity {
         limit = (TextView) findViewById(R.id.limit);
         batch = 1;
         heading = (TextView) findViewById(R.id.heading);
+        Button Adder;
+        Adder = (Button) findViewById(R.id.ADD);
+
+        Adder.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                onFullAdd();
+                return true;
+            }
+        });
 
 
         editName = (EditText) findViewById(R.id.name);
@@ -90,6 +108,7 @@ public class Expense extends AppCompatActivity {
 
 
     }
+
 
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
@@ -128,6 +147,10 @@ public class Expense extends AppCompatActivity {
     public void onAdd(View view){
         String name = editName.getText().toString();
         String num = editNum.getText().toString();
+
+        Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
+
         //num = Integer.parseInt(editNum.getText().toString());
 
         if (!name.equals("") && !num.equals("")) {
@@ -143,6 +166,10 @@ public class Expense extends AppCompatActivity {
             repopulate(null);
             listView.clearChoices();
         }
+        else {
+            onFullAdd();
+        }
+
     }
 
     public void onRemove(View view){
@@ -199,6 +226,103 @@ public class Expense extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+
+    public void onFullAdd(){
+
+        final String[] m = { "JAN ", "FEB", "MAR", "APR", "MAY", "JUN",
+                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+
+        final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+
+
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, m);
+
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, c);
+
+        final EditText name = new EditText(Expense.this);
+        final EditText cost = new EditText(Expense.this);
+        name.setHint("NAME");
+        cost.setHint("COST");
+        name.setInputType(InputType.TYPE_CLASS_TEXT);
+        cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        final Spinner sp_m = new Spinner(Expense.this);
+        sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_m.setAdapter(adp_m);
+
+        sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_month = m[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
+
+        final Spinner sp_c = new Spinner(Expense.this);
+        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_c.setAdapter(adp_c);
+
+        sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_category = c[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+        LinearLayout ll=new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        ll.addView(name);
+        ll.addView(cost);
+        ll.addView(sp_m);
+        ll.addView(sp_c);
+
+
+        builder.setView(ll);
+        builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String nam = name.getText().toString();
+                String cos = cost.getText().toString();
+
+
+                nam = nam.replace(" ", "_");
+                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                String shared_name = sharedpref.getString("username", "");
+
+                String sURL = myURL +"/" + shared_name+ "/expense/items/" + nam + "/" + cos + "/"+ Selected_category;
+                new Expense_GetUrlContentTask().execute(sURL, "ADD");
+
+                repopulate(null);
+               // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.create().show();
+
     }
 
 
@@ -315,14 +439,14 @@ public class Expense extends AppCompatActivity {
                     heading.setText(heading_text);
 
                 for (int i =0; i< jsonArray.length(); i++) {
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id").replace("_", " "),jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getInt("id"),jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
                 }
                     test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
 
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                mylist.add(new Expense_item("","","",test));
+                mylist.add(new Expense_item(0,"","",test));
                 adapter.notifyDataSetChanged();
             }catch (Exception e){
                 e.printStackTrace();
