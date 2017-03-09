@@ -170,6 +170,8 @@ public class Expense extends AppCompatActivity {
                     item.setChecked(false);
                 else item.setChecked(true);
 
+                Toast.makeText(this, "Working on this feature", Toast.LENGTH_SHORT).show();
+
                 return true;
 
             default:
@@ -325,7 +327,9 @@ public class Expense extends AppCompatActivity {
         final Spinner sp_m = new Spinner(Expense.this);
         sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         sp_m.setAdapter(adp_m);
-
+        int pos = 0;
+        pos = Integer.parseInt(mylist.get(0).date.substring(2))-1;
+        sp_m.setSelection(pos);
         sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -636,7 +640,8 @@ public class Expense extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
+                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
+                    mylist.add(new Expense_item("", "", "", test, ""));
                     adapter.notifyDataSetChanged();
                 } catch (Exception e) {
                     e.printStackTrace();
