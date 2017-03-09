@@ -114,7 +114,7 @@ def price_items(user, item):
 
 #############################EXPENSE PART#####################################
 
-@app.route('/<string:user>/expense/items')
+@app.route('/<string:user>/expense/items1')
 def get_all_expenses(user):
     cur = mysql.connection.cursor()
     cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
@@ -129,6 +129,78 @@ def get_all_expenses(user):
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
     mon_val = cur.fetchone()
     lim = ""
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        pass
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+        spring.append(thing)
+	thing['total'] = mon_val[0]
+        spring.append(thing)
+    return (json.dumps(spring))
+
+
+@app.route('/<string:user>/expense/items')
+def get_all_expenses1(user):
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
+    retVal = cur.fetchall()
+    sting1 = ""
+
+    now = datetime.datetime.now()
+    month = now.strftime("%y%m")
+    cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' % user)
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
+    mon_val = cur.fetchone()
+    lim = ""
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        lim = str(lim_val[0])
+    sting = [i for i in retVal]
+    # sting = [i for i in sting]
+    spring = []
+    for i in sting:
+        thing =dict(zip(["name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+        spring.append(thing)
+    if len(sting) != 0:
+        return (json.dumps(spring))
+    else:
+        return json.dumps([{'limit':lim}])
+
+
+
+
+@app.route('/<string:user>/expense/batch/<int:batch>')
+def get_batch_expenses(user, batch):
+    cur = mysql.connection.cursor()
+    now = datetime.datetime.now()
+
+    month = int(now.strftime("%y%m"))
+    batch_start = batch*3
+
+    start = get_sub_date(month, batch_start+3)
+    end  = get_sub_date(month, batch_start)
+
+    '''print ("Start\n")
+    print (start)
+    print("End\n")
+    print (end)
+'''
+    cur.execute('''SELECT name, cost, month, category from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
+    retVal = cur.fetchall()
+    sting1 = ""
+    cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
+    mon_val = cur.fetchone()
     try:
         lim = str(lim_val[0] - mon_val[0])
     except:
@@ -147,36 +219,6 @@ def get_all_expenses(user):
          return json.dumps([{'limit':lim}])
 
 
-@app.route('/<string:user>/expense/items1')
-def get_all_expenses1(user):
-    cur = mysql.connection.cursor()
-    cur.execute('''SELECT name, cost, month, category from %s_expense_table''' % user)
-    retVal = cur.fetchall()
-    sting1 = ""
-
-    now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
-    cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' % user)
-    lim_val = cur.fetchone()
-    cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
-    mon_val = cur.fetchone()
-    lim = ""
-    try:
-        lim = str(lim_val[0] - mon_val[0])
-    except:
-        lim = str(lim_val[0])
-    sting = [i for i in retVal]
-    # sting = [i for i in sting]
-    spring = []
-    for i in sting:
-        thing =dict(zip(["name", "cost", "date", "category"], i))
-        thing['limit'] = lim
-
-    if len(sting) != 0:
-        return (json.dumps(spring))
-    else:
-        return json.dumps([{'limit':lim}])
 
 
 
@@ -207,8 +249,8 @@ def get_category_month_expenses(user, month, category):
 def get_month_limit(user):
     cur = mysql.connection.cursor()
     now = datetime.datetime.now()
-    month = "%d%d" % (now.year, now.month)
-    month = month[2:]
+
+    month = int(now.strftime("%y%m"))
     cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' % user)
     lim_val = cur.fetchone()
     cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
@@ -226,8 +268,8 @@ def add_expense(user, item, cost, category):
         if not maxid[0]:
             ID = -1
         now = datetime.datetime.now()
-        month = "%d%d" %(now.year, now.month)
-        month = month[2:]
+
+	month = int(now.strftime("%y%m"))
         cur.execute('''INSERT INTO %s_expense_table(id, name, cost, month, category) value (%s ,"%s", %s, %s, "%s")''' %(user, ID+1, item, cost, month, category))
         mysql.connection.commit()
         return "Added %s!" %item
@@ -379,8 +421,15 @@ def delete_user(name):
 
         return "Did nothing!"
 
+########################OTHER FUNCTIONS ###########################
 
-
+def get_sub_date(date, num):
+    YY = date / 100 - num / 12
+    MM = date % 100 - num % 12
+    while (MM <= 0):
+        MM = MM + 12
+        YY -= 1
+    return YY * 100 + MM
 
 
 
