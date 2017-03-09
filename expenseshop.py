@@ -1,7 +1,6 @@
 from flask import Flask, request
 from flask_mysqldb import MySQL
-import datetime, json
-
+import datetime, json, time
 #SERVER ON  rojo16.pythonanywhere.com
 
 app = Flask(__name__)
@@ -301,11 +300,12 @@ def delete_item(user, item, month, cost):
     return "Done nothing!"
 
 
-@app.route('/<string:user>/expense/items/<int:idee>:<string:item>:<int:month>:<int:cost>:<string:category>', methods=['PUT'])
+@app.route('/<string:user>/expense/items/<string:idee>:<string:item>:<string:month>:<string:cost>:<string:category>', methods=['PUT'])
 def edit_item(user, idee, item, month, cost, category):
-        cur = mysql.connection.cursor()
         if request.method == 'PUT':
-            cur.execute('''UPDATE %s_expense_table set name = "%s", cost = "%s", month = "%s", category = "%s" where id = %d''' % (user, item, cost, month, category, idee))
+            month = date_from_monthstring(month)
+            cur = mysql.connection.cursor()
+            cur.execute('''UPDATE %s_expense_table set name = "%s", cost = "%s", month = "%s", category = "%s" where id = "%s"''' % (user, item, cost, month, category, idee))
             mysql.connection.commit()
         return "Updated %s!" %item
 
@@ -438,6 +438,19 @@ def get_sub_date(date, num):
         MM = MM + 12
         YY -= 1
     return YY * 100 + MM
+
+def date_from_monthstring(a):
+    m = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+         "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+    month = "ERROR"
+    for i,j in enumerate(m):
+        if j == a:
+            if i >= 10:
+                month = str(i+1)
+            else:
+                month = "0%d" % (i+1)
+    return "%s%s" %(datetime.datetime.fromtimestamp(time.time()).strftime("%y"), month)
+
 
 '''
 def date_from_timestamp(a):
