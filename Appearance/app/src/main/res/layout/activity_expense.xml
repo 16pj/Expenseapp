@@ -11,16 +11,30 @@
     tools:context="com.rpj.robin.appearance.Expense">
 
     <TextView
-        android:text="MONTH LIMIT:"
+        android:text="MONTH TOTAL:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/heading"
+        android:textAppearance="@style/TextAppearance.AppCompat.Button"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/header"
+        android:layout_marginStart="12dp"
+        android:textSize="12sp" />
+
+    <TextView
+        android:text="LIMIT:"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/limit"
-        android:layout_alignParentTop="true"
         android:onClick="onLimit"
-        android:layout_alignParentEnd="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Button"
         android:fontFamily="casual"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        android:textSize="14sp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:text="Add"
@@ -63,13 +77,13 @@
         android:id="@+id/name"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
         android:background="@android:color/holo_green_light"
-        android:layout_alignTop="@+id/ADD"
         android:layout_centerHorizontal="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
         android:hint="Item Name"
         android:fontFamily="casual"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:layout_alignTop="@+id/ADD" />
 
     <TextView
         android:text="EXPENSE LIST"
@@ -98,6 +112,8 @@
         android:layout_alignParentBottom="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE" />
+
+
 
 
 </RelativeLayout>

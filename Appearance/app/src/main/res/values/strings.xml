@@ -5,8 +5,11 @@
 
     <string name="entpass">Enter Password</string>
 
-
     <string name="stuff">SETTINGS</string>
     <string name="stuff2">LOGOUT</string>
     <string name="stuff3">SNAP</string>
+
+    <string name="month_totals">MONTH TOTALS</string>
+    <string name="category_wise">CATEGORY WISE</string>
+
 </resources>

@@ -2,57 +2,58 @@ package com.rpj.robin.appearance;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.List;
 
 public class Expense extends AppCompatActivity {
 
     private ArrayList<Expense_item> mylist;
     private ArrayList<Expense_item> selecteditems;
-
-    private ArrayList<String> itemnames;
-    private ArrayList<String> itemdates;
-    private ArrayList<String> itemcosts;
-    private ArrayList<String> itemcategory;
-
+    private int batch;
     private TextView limit;
-
-
     private ArrayAdapter<Expense_item> adapter;
     private ListView listView;
     private EditText editName;
     private EditText editNum;
-    private static String lim;
-    private static String Str1;
-    private static String Str2;
-    private static String temp;
-    private static int i;
-    private static int j;
+    private TextView heading;
     private String m_Text = "";
+    private String  TOTAL_FLAG = "FALSE";
+    private String Selected_month = "";
+    private String Selected_category = "DEFAULT";
 
-    //private String myURL = "http://192.168.1.25:35741";
-    String myURL = "http://rojo16.pythonanywhere.com";
+
+    private String myURL = "http://192.168.1.21:35741";
+
+    //String myURL = "http://rojo16.pythonanywhere.com";
+
+
+
 
 
     @Override
@@ -64,11 +65,19 @@ public class Expense extends AppCompatActivity {
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
         mylist = new ArrayList<>();
-        itemnames = new ArrayList<>();
-        itemdates = new ArrayList<>();
-        itemcosts = new ArrayList<>();
-        itemcategory = new ArrayList<>();
         limit = (TextView) findViewById(R.id.limit);
+        batch = 1;
+        heading = (TextView) findViewById(R.id.heading);
+        Button Adder;
+        Adder = (Button) findViewById(R.id.ADD);
+
+        Adder.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                onFullAdd();
+                return true;
+            }
+        });
 
 
         editName = (EditText) findViewById(R.id.name);
@@ -95,31 +104,107 @@ public class Expense extends AppCompatActivity {
                     if(!mybox.isChecked())
                         mybox.setChecked(true);
                 }
-                // }catch (Exception e){
-                //   e.printStackTrace();
-                //}
-
             }
         });
 
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                final List<String> m = Arrays.asList("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                        "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
+
+                final List<String> c = Arrays.asList("GROCERIES", "LEISURE", "NEEDS", "DEFAULT");
+                Expense_item selected_expense = mylist.get(position);
+                int mon_pos = Integer.parseInt(selected_expense.date.substring(2))-1;
+                int cat_pos = c.indexOf(selected_expense.category);
+
+                onEdit(selected_expense.id, selected_expense.name, selected_expense.cost.substring(0, selected_expense.cost.length()-4), mon_pos, cat_pos);
+
+                return true;
+            }
+        });
 
         repopulate(null);
 
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.expense_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.month_totals:
+                if (item.isChecked())
+                    item.setChecked(false);
+                else item.setChecked(true);
+
+                if (TOTAL_FLAG.equals("FALSE")) {
+                    TOTAL_FLAG = "TRUE";
+                    Toast.makeText(this, "Monthly Totals", Toast.LENGTH_SHORT).show();
+
+                    SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    String name = sharedpref.getString("username", "");
+
+                    String sURL = myURL + "/" + name + "/expense/totals";
+                    mylist.clear();
+                    adapter.notifyDataSetChanged();
+                    new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+                }
+                else {
+                    TOTAL_FLAG = "FALSE";
+                    repopulate(null);
+                }
+                return true;
+
+            case R.id.category_wise:
+                if (item.isChecked())
+                    item.setChecked(false);
+                else item.setChecked(true);
+
+                Toast.makeText(this, "Working on this feature", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            default:
+                return true;
+        }
+    }
+
+
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
 
-        String sURL = myURL + "/" + name + "/expense/items";
+        String sURL = myURL + "/" + name + "/expense/batch/0";
         mylist.clear();
-        itemnames.clear();
-        itemcosts.clear();
-        itemdates.clear();
-        adapter.notifyDataSetChanged();
+        batch=1;
+        TOTAL_FLAG="FALSE";
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
-        adapter.notifyDataSetChanged();
 
+    }
+
+    public void overpopulate(View view){
+
+        if(TOTAL_FLAG.equals("FALSE")) {
+            if (mylist.get(mylist.size() - 1).name.equals(""))
+                mylist.remove(mylist.size() - 1);
+            adapter.notifyDataSetChanged();
+            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            String name = sharedpref.getString("username", "");
+
+            String sURL = myURL + "/" + name + "/expense/batch/" + batch;
+            new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+            batch += 1;
+        }
     }
 
 
@@ -133,53 +218,52 @@ public class Expense extends AppCompatActivity {
     }
 
     public void onAdd(View view){
-        String name = editName.getText().toString();
-        String num = "";
-        num = editNum.getText().toString();
-        //num = Integer.parseInt(editNum.getText().toString());
 
-        if (!name.equals("") && !num.equals("")) {
+        if(TOTAL_FLAG.equals("FALSE")) {
+            String name = editName.getText().toString();
+            String num = editNum.getText().toString();
 
-            // String newstring = new SimpleDateFormat("yyyy-M").format(new Date());
-            //   System.out.println(newstring);
-            //  newstring = newstring.replace("-","");
-            // itemnames.add(name);
-            // itemdates.add(Integer.parseInt(newstring));
-            //itemcosts.add(num);
+            Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
 
-            name = name.replace(" ", "_");
-            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-            String shared_name = sharedpref.getString("username", "");
+            //num = Integer.parseInt(editNum.getText().toString());
 
-            String sURL = myURL +"/" + shared_name+ "/expense/items/" + name + "/" + num + "/DEFAULT";
-            new Expense_GetUrlContentTask().execute(sURL, "ADD");
-            editName.setText("");
-            editNum.setText("");
-            repopulate(null);
-            listView.clearChoices();
+            if (!name.equals("") && !num.equals("")) {
+
+                name = name.replace(" ", "_");
+                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                String shared_name = sharedpref.getString("username", "");
+
+                String sURL = myURL + "/" + shared_name + "/expense/items/" + name + "/" + num + "/DEFAULT";
+                new Expense_GetUrlContentTask().execute(sURL, "ADD");
+                editName.setText("");
+                editNum.setText("");
+                repopulate(null);
+                listView.clearChoices();
+            } else {
+                onFullAdd();
+            }
         }
     }
 
     public void onRemove(View view){
+        if(TOTAL_FLAG.equals("FALSE")) {
+            listView.clearChoices();
+            if (mylist.size() == 0) return;
 
-        if(itemnames.size() == 0) return;
+            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            String shared_name = sharedpref.getString("username", "");
 
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String shared_name = sharedpref.getString("username", "");
+            for (Expense_item item : selecteditems) {
+                String thing = item.name;
+                thing = thing.replace(" ", "_");
+                String sURL = myURL + "/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
 
-        for (Expense_item item:selecteditems) {
-            String thing = item.name;
-            //int date = itemdates.get(item);
-            thing = thing.replace(" ", "_");
-            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK","");
-
-            new Expense_GetUrlContentTask().execute(sURL, "DELETE");
-            itemnames.remove(item);
+                new Expense_GetUrlContentTask().execute(sURL, "DELETE");
+            }
+            selecteditems.clear();
+            repopulate(null);
         }
-        listView.clearChoices();
-        selecteditems.clear();
-        repopulate(null);
-
     }
 
     public void onLimit(View view){
@@ -206,9 +290,6 @@ public class Expense extends AppCompatActivity {
                     e.printStackTrace();
                     Toast.makeText(getBaseContext(), "Invalid limit", Toast.LENGTH_SHORT).show();
                 }
-
-
-
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -221,186 +302,372 @@ public class Expense extends AppCompatActivity {
         builder.show();
     }
 
-    public void onCost(View view) {
-        ;
+
+    public void onFullAdd(){
+
+        final String[] m = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+
+        final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+
+
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, m);
+
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, c);
+
+        final EditText name = new EditText(Expense.this);
+        final EditText cost = new EditText(Expense.this);
+        name.setHint("NAME");
+        cost.setHint("COST");
+        name.setInputType(InputType.TYPE_CLASS_TEXT);
+        cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        final Spinner sp_m = new Spinner(Expense.this);
+        sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_m.setAdapter(adp_m);
+        int pos = 0;
+        pos = Integer.parseInt(mylist.get(0).date.substring(2))-1;
+        sp_m.setSelection(pos);
+        sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_month = m[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        final Spinner sp_c = new Spinner(Expense.this);
+        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_c.setAdapter(adp_c);
+
+        sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_category = c[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+        LinearLayout ll=new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        ll.addView(name);
+        ll.addView(cost);
+        ll.addView(sp_m);
+        ll.addView(sp_c);
+
+
+        builder.setView(ll);
+        builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String nam = name.getText().toString();
+                String cos = cost.getText().toString();
+
+
+                nam = nam.replace(" ", "_");
+                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                String shared_name = sharedpref.getString("username", "");
+
+                String sURL = myURL +"/" + shared_name+ "/expense/items/" + nam + "/" + cos + "/"+ Selected_category;
+                new Expense_GetUrlContentTask().execute(sURL, "ADD");
+
+                repopulate(null);
+               // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.create().show();
+
+        repopulate(null);
+
     }
 
+
+    public void onEdit(final String idee, String edit_name, String edit_cost, int  edit_month, int edit_category ){
+
+        final String[] m = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+
+        final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, m);
+
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+                android.R.layout.simple_spinner_item, c);
+
+        final EditText name = new EditText(Expense.this);
+        final EditText cost = new EditText(Expense.this);
+        name.setText(edit_name);
+        cost.setText(edit_cost);
+        name.setInputType(InputType.TYPE_CLASS_TEXT);
+        cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        final Spinner sp_m = new Spinner(Expense.this);
+        sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_m.setAdapter(adp_m);
+
+        sp_m.setSelection(edit_month);
+        sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_month = m[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        final Spinner sp_c = new Spinner(Expense.this);
+        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        sp_c.setAdapter(adp_c);
+        sp_c.setSelection(edit_category);
+        sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Selected_category = c[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+        LinearLayout ll=new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        ll.addView(name);
+        ll.addView(cost);
+        ll.addView(sp_m);
+        ll.addView(sp_c);
+
+
+        builder.setView(ll);
+        builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String nam = name.getText().toString();
+                String cos = cost.getText().toString();
+
+
+                nam = nam.replace(" ", "_");
+                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                String shared_name = sharedpref.getString("username", "");
+
+                String sURL = myURL +"/" + shared_name+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
+                new Expense_GetUrlContentTask().execute(sURL, "EDIT");
+
+                repopulate(null);
+                // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.create().show();
+        repopulate(null);
+    }
 
 
     private class Expense_GetUrlContentTask extends AsyncTask<String, String, String> {
         protected String doInBackground(String... params) {
 
-            if(params[1].equals("ADD")) {
+            switch (params[1]) {
 
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
+                case ("ADD") :
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("POST");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    return content;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }}
+                    break;
+                case ("EDIT") :
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("PUT");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
 
-            else if (params[1].equals("DELETE")){
-
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("DELETE");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    return content;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }}
+                    break;
+                case ("DELETE"):
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("DELETE");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
 
-            else if (params[1].equals("LIMIT")){
-
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("PUT");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    return content;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }}
+                    break;
+                case ("LIMIT"):
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("PUT");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
 
-            else if (params[1].equals("SHOW")) {
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
-                    //connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
-                        publishProgress(line);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    return content;
+                    break;
+                case("SHOW"):
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                        try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("GET");
+                        //connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                            publishProgress(line);
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    break;
                 }
-            }
-
             return null;
         }
 
+
         protected void onProgressUpdate(String... progress) {
-
-
-            /*    try {
-                    JSONArray jsonArray = new JSONArray(progress[0]);
-
-                    for (i =0; i< jsonArray.length(); i++) {
-                        Str1 = jsonArray.getJSONObject(i).getString("name");
-                        Str2 = jsonArray.getJSONObject(i).getString("cost");
-
-                        String temp = Str1 + "";
-                        for (j = Str2.length(); i < 50 - Str1.length(); i++) {
-                            temp += " ";
-                        }
-
-                        mylist.add(temp + Str2 + " SEK");
-                        itemnames.add(Str1);
-                        itemcosts.add(Str2);
-                        itemdates.add(jsonArray.getJSONObject(i).getString("date"));
-                        itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
-                        lim = jsonArray.getJSONObject(i).getString("limit");
-                    }
-                    limit.setText(lim);
-                    adapter.notifyDataSetChanged();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-*/
-
-
-
-
-
-           /*     progress[0] = progress[0].replace("_", " ");
-                splitted = progress[0].split(":");
-                String temp = splitted[0] + "";
-                for (int i = splitted[1].length(); i < 50 - splitted[0].length(); i++) {
-                    temp += " ";
-                }
-
-                mylist.add(temp + splitted[1] + " SEK");
-                adapter.notifyDataSetChanged();
-                itemnames.add(splitted[0]);
-                itemcosts.add(splitted[1]);
-                itemdates.add(splitted[2]);
-                String lim = "MONTH LIMIT: " + splitted[4];
-                limit.setText(lim);
-*/
         }
 
 
         protected void onPostExecute(String result) {
 
-            try {
-                JSONArray jsonArray = new JSONArray(result);
-                limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(jsonArray.length()-1).getString("limit")));
+            String test="0000";
 
-                for (i =0; i< jsonArray.length(); i++) {
-                    temp = "";
-                    for (int k =jsonArray.getJSONObject(i).getString("cost").length(); k <55 - jsonArray.getJSONObject(i).getString("name").length();k++){
-                        temp = temp + " ";
+
+            if(TOTAL_FLAG.equals("FALSE")) {
+                try {
+                    String heading_text;
+                    JSONArray jsonArray = new JSONArray(result);
+
+                    limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length() - 1).getString("limit")));
+
+
+                    try {
+                            heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length() - 1).getString("total") + " SEK";
+                            heading.setText(heading_text);
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
+                    mylist.add(new Expense_item("", "", "", test, ""));
+                    adapter.notifyDataSetChanged();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
 
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date") ));
+                try{
+                    limit.setText("");
+                    heading.setText(R.string.month_totals);
+                    JSONArray jsonArray = new JSONArray(result);
 
-                    itemnames.add(jsonArray.getJSONObject(i).getString("name"));
-                    itemcosts.add(jsonArray.getJSONObject(i).getString("cost"));
-                    itemdates.add(jsonArray.getJSONObject(i).getString("date"));
-                    itemcategory.add(jsonArray.getJSONObject(i).getString("category"));
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),""));
+                    }
+                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
+                    mylist.add(new Expense_item("", "", "", test, ""));
+                    adapter.notifyDataSetChanged();
+
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
 
-                mylist.add(new Expense_item("MONTH TOTAL", jsonArray.getJSONObject(jsonArray.length()-1).getString("total") + " SEK", jsonArray.getJSONObject(i-1).getString("date")));
-                //limit.setText(String.format("MONTH LIMIT: %s", jsonArray.getJSONObject(0).getString("limit")));
-                adapter.notifyDataSetChanged();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
 
+            }
 
         }
     }
-
-
-
 }
