@@ -22,7 +22,6 @@ app.config['MYSQL_DB'] = 'testdb'
 mysql = MySQL(app)
 
 
-
 @app.route('/')
 def index():
     return "WELCOME TO THE APP. USE THE API."
@@ -440,11 +439,13 @@ def get_sub_date(date, num):
         YY -= 1
     return YY * 100 + MM
 
-
+'''
+def date_from_timestamp(a):
+    return datetime.fromtimestamp(a).strftime("%y%m")
+'''
 
 
 ########################MAIN #################################################3
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 35741, debug=True)
-    #app.run('0.0.0.0', 3000, debug=True)
