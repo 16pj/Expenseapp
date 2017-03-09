@@ -188,6 +188,20 @@ def get_batch_expenses(user, batch):
          return json.dumps([{'limit':lim}])
 
 
+@app.route('/<string:user>/expense/totals')
+def get_totals_expenses(user):
+    cur = mysql.connection.cursor()
+
+    cur.execute('''select month, sum(cost) from %s_expense_table group by month''' % (user))
+    retVal = cur.fetchall()
+    sting = [i for i in retVal]
+    spring = []
+    thing = dict()
+    for j,k in sting:
+            spring.append({"date":j, "cost":int(k)})
+    return (json.dumps(spring))
+
+
 
 @app.route('/<string:user>/expense/items')
 def get_all_expenses1(user):

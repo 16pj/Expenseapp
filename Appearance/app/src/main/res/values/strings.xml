@@ -5,33 +5,11 @@
 
     <string name="entpass">Enter Password</string>
 
-
     <string name="stuff">SETTINGS</string>
     <string name="stuff2">LOGOUT</string>
     <string name="stuff3">SNAP</string>
 
-    <string-array name="months_array">
-        <item>JAN</item>
-        <item>FEB</item>
-        <item>MAR</item>
-        <item>APR</item>
-        <item>MAY</item>
-        <item>JUN</item>
-        <item>JUL</item>
-        <item>AUG</item>
-        <item>SEP</item>
-        <item>OCT</item>
-        <item>NOV</item>
-        <item>DEC</item>
-    </string-array>
-
-    <string-array name="category_array">
-        <item>GROCERIES</item>
-        <item>LEISURE</item>
-        <item>NEEDS</item>
-        <item>LOAN</item>
-        <item>DEFAULT</item>
-
-    </string-array>
+    <string name="month_totals">MONTH TOTALS</string>
+    <string name="category_wise">CATEGORY WISE</string>
 
 </resources>

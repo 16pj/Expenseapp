@@ -2,12 +2,15 @@ package com.rpj.robin.appearance;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -40,6 +43,7 @@ public class Expense extends AppCompatActivity {
     private EditText editNum;
     private TextView heading;
     private String m_Text = "";
+    private String  TOTAL_FLAG = "FALSE";
     private String Selected_month = "";
     private String Selected_category = "DEFAULT";
 
@@ -125,7 +129,52 @@ public class Expense extends AppCompatActivity {
 
         repopulate(null);
 
+    }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.expense_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.month_totals:
+                if (item.isChecked())
+                    item.setChecked(false);
+                else item.setChecked(true);
+
+                if (TOTAL_FLAG.equals("FALSE")) {
+                    TOTAL_FLAG = "TRUE";
+                    Toast.makeText(this, "Monthly Totals", Toast.LENGTH_SHORT).show();
+
+                    SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    String name = sharedpref.getString("username", "");
+
+                    String sURL = myURL + "/" + name + "/expense/totals";
+                    mylist.clear();
+                    adapter.notifyDataSetChanged();
+                    new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+                }
+                else {
+                    TOTAL_FLAG = "FALSE";
+                    repopulate(null);
+                }
+                return true;
+
+            case R.id.category_wise:
+                if (item.isChecked())
+                    item.setChecked(false);
+                else item.setChecked(true);
+
+                return true;
+
+            default:
+                return true;
+        }
     }
 
 
@@ -136,21 +185,24 @@ public class Expense extends AppCompatActivity {
         String sURL = myURL + "/" + name + "/expense/batch/0";
         mylist.clear();
         batch=1;
+        TOTAL_FLAG="FALSE";
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
 
     }
 
     public void overpopulate(View view){
 
-        if(mylist.get(mylist.size()-1).name.equals(""))
-        mylist.remove(mylist.size()-1);
-        adapter.notifyDataSetChanged();
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String name = sharedpref.getString("username", "");
+        if(TOTAL_FLAG.equals("FALSE")) {
+            if (mylist.get(mylist.size() - 1).name.equals(""))
+                mylist.remove(mylist.size() - 1);
+            adapter.notifyDataSetChanged();
+            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            String name = sharedpref.getString("username", "");
 
-        String sURL = myURL + "/" + name + "/expense/batch/" + batch;
-        new Expense_GetUrlContentTask().execute(sURL, "SHOW");
-        batch +=1;
+            String sURL = myURL + "/" + name + "/expense/batch/" + batch;
+            new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+            batch += 1;
+        }
     }
 
 
@@ -164,51 +216,52 @@ public class Expense extends AppCompatActivity {
     }
 
     public void onAdd(View view){
-        String name = editName.getText().toString();
-        String num = editNum.getText().toString();
 
-        Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
+        if(TOTAL_FLAG.equals("FALSE")) {
+            String name = editName.getText().toString();
+            String num = editNum.getText().toString();
 
-        //num = Integer.parseInt(editNum.getText().toString());
+            Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
 
-        if (!name.equals("") && !num.equals("")) {
+            //num = Integer.parseInt(editNum.getText().toString());
 
-            name = name.replace(" ", "_");
-            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-            String shared_name = sharedpref.getString("username", "");
+            if (!name.equals("") && !num.equals("")) {
 
-            String sURL = myURL +"/" + shared_name+ "/expense/items/" + name + "/" + num + "/DEFAULT";
-            new Expense_GetUrlContentTask().execute(sURL, "ADD");
-            editName.setText("");
-            editNum.setText("");
-            repopulate(null);
-            listView.clearChoices();
+                name = name.replace(" ", "_");
+                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                String shared_name = sharedpref.getString("username", "");
+
+                String sURL = myURL + "/" + shared_name + "/expense/items/" + name + "/" + num + "/DEFAULT";
+                new Expense_GetUrlContentTask().execute(sURL, "ADD");
+                editName.setText("");
+                editNum.setText("");
+                repopulate(null);
+                listView.clearChoices();
+            } else {
+                onFullAdd();
+            }
         }
-        else {
-            onFullAdd();
-        }
-
     }
 
     public void onRemove(View view){
+        if(TOTAL_FLAG.equals("FALSE")) {
+            listView.clearChoices();
+            if (mylist.size() == 0) return;
 
-        if(mylist.size() == 0) return;
+            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+            String shared_name = sharedpref.getString("username", "");
 
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String shared_name = sharedpref.getString("username", "");
+            for (Expense_item item : selecteditems) {
+                String thing = item.name;
+                thing = thing.replace(" ", "_");
+                String sURL = myURL + "/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
 
-        for (Expense_item item:selecteditems) {
-            String thing = item.name;
-            thing = thing.replace(" ", "_");
-            String sURL = myURL+"/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK","");
-
-            new Expense_GetUrlContentTask().execute(sURL, "DELETE");
+                new Expense_GetUrlContentTask().execute(sURL, "DELETE");
+            }
+            selecteditems.clear();
+            repopulate(null);
         }
-        listView.clearChoices();
-        selecteditems.clear();
-        repopulate(null);
-
     }
 
     public void onLimit(View view){
@@ -562,27 +615,52 @@ public class Expense extends AppCompatActivity {
         protected void onPostExecute(String result) {
 
             String test="0000";
-            try {
-                String heading_text;
-                JSONArray jsonArray = new JSONArray(result);
-                limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length()-1).getString("limit")));
 
+
+            if(TOTAL_FLAG.equals("FALSE")) {
                 try {
-                    heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length() - 1).getString("total") + " SEK";
-                    heading.setText(heading_text);
+                    String heading_text;
+                    JSONArray jsonArray = new JSONArray(result);
 
-                for (int i =0; i< jsonArray.length(); i++) {
-                    mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"),jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK",jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
+                    limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length() - 1).getString("limit")));
+
+
+                    try {
+                            heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length() - 1).getString("total") + " SEK";
+                            heading.setText(heading_text);
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    adapter.notifyDataSetChanged();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
+            else {
+
+                try{
+                    limit.setText("");
+                    heading.setText(R.string.month_totals);
+                    JSONArray jsonArray = new JSONArray(result);
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),""));
+                    }
                     test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
+                    mylist.add(new Expense_item("", "", "", test, ""));
+                    adapter.notifyDataSetChanged();
 
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                mylist.add(new Expense_item("","","",test,""));
-                adapter.notifyDataSetChanged();
-            }catch (Exception e){
-                e.printStackTrace();
+
+
             }
 
         }
