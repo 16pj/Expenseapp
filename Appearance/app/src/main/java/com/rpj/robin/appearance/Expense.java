@@ -149,8 +149,9 @@ public class Expense extends AppCompatActivity {
 
                     SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     String name = sharedpref.getString("username", "");
+                    String passwd = sharedpref.getString("password", "");
 
-                    String sURL = myURL + "/" + name + "/expense/totals";
+                    String sURL = myURL + "/" + name +":" + passwd+ "/expense/totals";
                     mylist.clear();
                     adapter.notifyDataSetChanged();
                     new Expense_GetUrlContentTask().execute(sURL, "SHOW");
@@ -205,8 +206,9 @@ public class Expense extends AppCompatActivity {
 
                             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                             String name = sharedpref.getString("username", "");
+                            String passwd = sharedpref.getString("password", "");
 
-                            String sURL = myURL + "/" + name + "/expense/batch_cat/" + Selected_category_total +  "/0";
+                            String sURL = myURL + "/" + name +":" + passwd+ "/expense/batch_cat/" + Selected_category_total +  "/0";
                             mylist.clear();
                             adapter.notifyDataSetChanged();
                             batch=1;
@@ -244,8 +246,9 @@ public class Expense extends AppCompatActivity {
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL + "/" + name + "/expense/batch/0";
+        String sURL = myURL + "/" + name +":" + passwd+  "/expense/batch/0";
         mylist.clear();
         adapter.notifyDataSetChanged();
         batch=1;
@@ -263,11 +266,13 @@ public class Expense extends AppCompatActivity {
          //   adapter.notifyDataSetChanged();
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
+
             String sURL;
             if(CATEGOY_FLAG.equals("FALSE"))
-                sURL = myURL + "/" + name + "/expense/batch/" + batch;
+                sURL = myURL + "/" + name +":" + passwd+ "/expense/batch/" + batch;
             else
-                sURL = myURL + "/" + name + "/expense/batch_cat/" + Selected_category_total+ "/" + batch;
+                sURL = myURL + "/" + name +":" + passwd+ "/expense/batch_cat/" + Selected_category_total+ "/" + batch;
 
             new Expense_GetUrlContentTask().execute(sURL, "SHOW");
             batch += 1;
@@ -278,8 +283,10 @@ public class Expense extends AppCompatActivity {
     public void set_limit(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL +"/" + name+ "/expense/limit/" + m_Text;
+
+        String sURL = myURL +"/" + name+":" + passwd+ "/expense/limit/" + m_Text;
         new Expense_GetUrlContentTask().execute(sURL, "LIMIT");
         Toast.makeText(this, "Limit set to " + m_Text, Toast.LENGTH_SHORT).show();
     }
@@ -298,8 +305,10 @@ public class Expense extends AppCompatActivity {
                 name = name.replace(" ", "_");
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
+                String passwd = sharedpref.getString("password", "");
 
-                String sURL = myURL + "/" + shared_name + "/expense/items/" + name + "/" + num + "/DEFAULT";
+
+                String sURL = myURL + "/" + shared_name + ":" + passwd+ "/expense/items/" + name + "/" + num + "/DEFAULT";
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
                 editName.setText("");
                 editNum.setText("");
@@ -317,11 +326,12 @@ public class Expense extends AppCompatActivity {
 
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String shared_name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
 
             for (Expense_item item : selecteditems) {
                 String thing = item.name;
                 thing = thing.replace(" ", "_");
-                String sURL = myURL + "/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
+                String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
 
                 new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             }
@@ -448,8 +458,10 @@ public class Expense extends AppCompatActivity {
                 nam = nam.replace(" ", "_");
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
+                String passwd = sharedpref.getString("password", "");
 
-                String sURL = myURL +"/" + shared_name+ "/expense/items1/" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
+
+                String sURL = myURL +"/" + shared_name+":" + passwd+ "/expense/items1/" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
 
                 repopulate(null);
@@ -546,8 +558,9 @@ public class Expense extends AppCompatActivity {
                     nam = nam.replace(" ", "_");
                     SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     String shared_name = sharedpref.getString("username", "");
+                    String passwd = sharedpref.getString("password", "");
 
-                    String sURL = myURL + "/" + shared_name + "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":" + Selected_category;
+                    String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":" + Selected_category;
                     new Expense_GetUrlContentTask().execute(sURL, "EDIT");
 
                     repopulate(null);
@@ -738,7 +751,6 @@ public class Expense extends AppCompatActivity {
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
 
             }
 

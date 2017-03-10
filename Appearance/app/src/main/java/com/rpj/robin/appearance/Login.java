@@ -14,6 +14,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 
 public class Login extends AppCompatActivity {
 
@@ -38,6 +41,8 @@ public class Login extends AppCompatActivity {
         String id = editname.getText().toString();
         String pass = editpass.getText().toString();
 
+        pass = get_md5_from_string(pass);
+
         if (id.equals("") || pass.equals("")){
             Toast.makeText(this, "Invalid ID/PASS", Toast.LENGTH_SHORT).show();
         }
@@ -52,6 +57,7 @@ public class Login extends AppCompatActivity {
 
         uname = editname.getText().toString();
         String upass = editpass.getText().toString();
+        upass = get_md5_from_string(upass);
 
         if (uname.equals("") || upass.equals("")){
             Toast.makeText(this, "Invalid ID/PASS", Toast.LENGTH_SHORT).show();
@@ -74,7 +80,19 @@ public class Login extends AppCompatActivity {
         startActivity(i);
     }
 
-    public void onRESET(View view){
+    public void onRESET(View view) {
+
+        uname = editname.getText().toString();
+        String upass = editpass.getText().toString();
+        upass = get_md5_from_string(upass);
+
+        if (uname.equals("") || upass.equals("")){
+            Toast.makeText(this, "Invalid ID/PASS", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            String sURL = myURL + "/RESET/" + uname + ":" + upass;
+            new GetUrlContentTask().execute(sURL, "RESET");
+        }
 
     }
 
@@ -159,6 +177,27 @@ public class Login extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     break;
+                case "RESET":
+
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("PUT");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
 
                 case "SHOW":
                     try {
@@ -210,7 +249,7 @@ public class Login extends AppCompatActivity {
 
            else if(result.trim().equals("LOGGED")){
                Toast.makeText(Login.this, "SUCCESSFULLY LOGGED IN", Toast.LENGTH_SHORT).show();
-               saveInfo(editname.getText().toString(), editpass.getText().toString());
+               saveInfo(editname.getText().toString(), get_md5_from_string(editpass.getText().toString()));
                Intent i = new Intent(Login.this, MainActivity.class);
                startActivity(i);
            }
@@ -233,4 +272,24 @@ public class Login extends AppCompatActivity {
 
         }
     }
+
+    public String get_md5_from_string(String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuilder hexString = new StringBuilder();
+            for(int i:messageDigest)
+                hexString.append(Integer.toHexString(0xFF & i));
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
 }

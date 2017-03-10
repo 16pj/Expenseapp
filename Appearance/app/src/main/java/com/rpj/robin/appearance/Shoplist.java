@@ -80,8 +80,10 @@ public class Shoplist extends AppCompatActivity {
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL + "/" + name+ "/shoplist/items";
+
+        String sURL = myURL + "/" + name+ ":" + passwd + "/shoplist/items";
         mylist.clear();
         adapter.notifyDataSetChanged();
         new Shop_GetUrlContentTask().execute(sURL, "SHOW");
@@ -95,8 +97,10 @@ public class Shoplist extends AppCompatActivity {
         if (!thing.equals("")) {
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
+
             thing = thing.replace(" ", "_");
-            String sURL = myURL + "/" + name+ "/shoplist/items/" + "_"+thing;
+            String sURL = myURL + "/" + name + ":" + passwd + "/shoplist/items/" + "_"+thing;
             //mylist.add(thing);
             //adapter.notifyDataSetChanged();
             new Shop_GetUrlContentTask().execute(sURL, "ADD");
@@ -111,12 +115,14 @@ public class Shoplist extends AppCompatActivity {
         if(mylist.size() == 0) return;
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
         for (String item:selecteditems) {
             if (item.startsWith("*"))
                 item = item.substring(1);
             String thing = item.replace(" ", "_");
             //mylist.remove(item);
-            String sURL = myURL + "/" + name+ "/shoplist/items/" + thing;
+            String sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "DELETE");
         }
         repopulate(null);
@@ -129,20 +135,22 @@ public class Shoplist extends AppCompatActivity {
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
 
         for (String item:selecteditems){
             if (item.startsWith("*")) {
                 mylist.remove(item);
                 mylist.add(item.substring(1));
                 String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + "/shoplist/unprioritize/" + thing.substring(1);
+                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/unprioritize/" + thing.substring(1);
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }
             else {
                 mylist.remove(item);
                 mylist.add("*" + item);
                 String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + "/shoplist/prioritize/" + thing;
+                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/prioritize/" + thing;
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }}
         listView.clearChoices();
