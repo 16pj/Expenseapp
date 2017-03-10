@@ -126,7 +126,7 @@ def get_batch_expenses(user, batch):
     try:
         lim = str(lim_val[0] - mon_val[0])
     except:
-        pass
+        lim = str(lim_val[0])
     sting = [i for i in retVal]
     spring = []
     for i in sting:

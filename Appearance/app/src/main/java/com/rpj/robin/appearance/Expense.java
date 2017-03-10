@@ -2,7 +2,6 @@ package com.rpj.robin.appearance;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,12 +47,9 @@ public class Expense extends AppCompatActivity {
     private String Selected_category = "DEFAULT";
 
 
+    //private String myURL = "http://192.168.1.21:35741";
     private String myURL = "http://192.168.1.21:35741";
-
     //String myURL = "http://rojo16.pythonanywhere.com";
-
-
-
 
 
     @Override
@@ -112,9 +108,6 @@ public class Expense extends AppCompatActivity {
 
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-                final List<String> m = Arrays.asList("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-                        "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
 
                 final List<String> c = Arrays.asList("GROCERIES", "LEISURE", "NEEDS", "DEFAULT");
                 Expense_item selected_expense = mylist.get(position);
@@ -186,6 +179,7 @@ public class Expense extends AppCompatActivity {
 
         String sURL = myURL + "/" + name + "/expense/batch/0";
         mylist.clear();
+        adapter.notifyDataSetChanged();
         batch=1;
         TOTAL_FLAG="FALSE";
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
@@ -195,9 +189,9 @@ public class Expense extends AppCompatActivity {
     public void overpopulate(View view){
 
         if(TOTAL_FLAG.equals("FALSE")) {
-            if (mylist.get(mylist.size() - 1).name.equals(""))
-                mylist.remove(mylist.size() - 1);
-            adapter.notifyDataSetChanged();
+         //   if (mylist.get(mylist.size() - 1).name.equals(""))
+         //       mylist.remove(mylist.size() - 1);
+         //   adapter.notifyDataSetChanged();
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
 
@@ -248,7 +242,6 @@ public class Expense extends AppCompatActivity {
 
     public void onRemove(View view){
         if(TOTAL_FLAG.equals("FALSE")) {
-            listView.clearChoices();
             if (mylist.size() == 0) return;
 
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
@@ -261,6 +254,7 @@ public class Expense extends AppCompatActivity {
 
                 new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             }
+            listView.clearChoices();
             selecteditems.clear();
             repopulate(null);
         }
@@ -311,10 +305,10 @@ public class Expense extends AppCompatActivity {
         final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
 
 
-        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, m);
 
-        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, c);
 
         final EditText name = new EditText(Expense.this);
@@ -327,9 +321,13 @@ public class Expense extends AppCompatActivity {
         final Spinner sp_m = new Spinner(Expense.this);
         sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         sp_m.setAdapter(adp_m);
-        int pos = 0;
-        pos = Integer.parseInt(mylist.get(0).date.substring(2))-1;
-        sp_m.setSelection(pos);
+        int pos;
+        try {
+            pos = Integer.parseInt(mylist.get(0).date.substring(2)) - 1;
+        }catch (Exception e){
+            pos = 0;
+        }
+            sp_m.setSelection(pos);
         sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -408,10 +406,10 @@ public class Expense extends AppCompatActivity {
 
         final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
 
-        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, m);
 
-        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, c);
 
         final EditText name = new EditText(Expense.this);
@@ -466,7 +464,7 @@ public class Expense extends AppCompatActivity {
 
 
         builder.setView(ll);
-        builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("UPDATE",  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String nam = name.getText().toString();
                 String cos = cost.getText().toString();
@@ -618,9 +616,6 @@ public class Expense extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
 
-            String test="0000";
-
-
             if(TOTAL_FLAG.equals("FALSE")) {
                 try {
                     String heading_text;
@@ -640,8 +635,7 @@ public class Expense extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
-                    mylist.add(new Expense_item("", "", "", test, ""));
+
                     adapter.notifyDataSetChanged();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -657,8 +651,7 @@ public class Expense extends AppCompatActivity {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),""));
                     }
-                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
-                    mylist.add(new Expense_item("", "", "", test, ""));
+
                     adapter.notifyDataSetChanged();
 
                 }catch (Exception e){

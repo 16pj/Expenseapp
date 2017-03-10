@@ -20,7 +20,6 @@ public class Login extends AppCompatActivity {
     private EditText editname;
     private EditText editpass;
     private String uname;
-    private String upass;
 
     private String myURL = "http://192.168.1.21:35741";
 
@@ -52,7 +51,7 @@ public class Login extends AppCompatActivity {
     public void onSign(View view) {
 
         uname = editname.getText().toString();
-        upass = editpass.getText().toString();
+        String upass = editpass.getText().toString();
 
         if (uname.equals("") || upass.equals("")){
             Toast.makeText(this, "Invalid ID/PASS", Toast.LENGTH_SHORT).show();

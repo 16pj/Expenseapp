@@ -1,7 +1,6 @@
 package com.rpj.robin.appearance;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +10,11 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
+class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
-    String [] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+    private String [] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 
-    public CustomUsersAdapter(Context context, ArrayList<Expense_item> expenses) {
+     CustomUsersAdapter(Context context, ArrayList<Expense_item> expenses) {
         super(context, 0, expenses);
      }
 
@@ -28,8 +27,6 @@ public class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
          if(position != 0) next_item = getItem(position-1);
          else next_item = getItem(position);
-
-         int sum = 0;
        
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {

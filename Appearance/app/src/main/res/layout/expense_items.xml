@@ -52,6 +52,8 @@
         android:layout_alignStart="@+id/heading"
         android:id="@+id/more"
         android:onClick="overpopulate"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:textSize="14sp" />
 
 
