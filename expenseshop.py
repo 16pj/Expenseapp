@@ -142,6 +142,40 @@ def get_batch_expenses(user, batch):
         return json.dumps([{'limit': lim}])
 
 
+
+@app.route('/<string:user>/expense/batch_cat/<string:category>/<int:batch>')
+def get_cat_batch_expenses(user, category, batch):
+    cur = mysql.connection.cursor()
+    now = datetime.datetime.now()
+    month = int(now.strftime("%y%m"))
+    batch_start = batch*3
+    start = get_sub_date(month, batch_start+3)
+    end  = get_sub_date(month, batch_start)
+    cur.execute('''SELECT id, name, cost, month, category from %s_expense_table where month > %s and month <= %s and category = "%s" order by month DESC''' % (user, start, end, category))
+    retVal = cur.fetchall()
+    cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' %user)
+    lim_val = cur.fetchone()
+    cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
+    mon_val = cur.fetchone()
+    try:
+        lim = str(lim_val[0] - mon_val[0])
+    except:
+        lim = str(lim_val[0])
+    sting = [i for i in retVal]
+    spring = []
+    for i in sting:
+        thing = dict(zip(["id", "name", "cost", "date", "category"], i))
+        thing['limit'] = lim
+        thing['total'] = str(mon_val[0])
+        spring.append(thing)
+    if len(sting) != 0:
+        del cur
+        return json.dumps(spring)
+    else:
+        del cur
+        return json.dumps([{'limit': lim}])
+
+
 @app.route('/<string:user>/expense/totals')
 def get_totals_expenses(user):
     cur = mysql.connection.cursor()
@@ -222,7 +256,7 @@ def get_month_limit(user):
 
 
 @app.route('/<string:user>/expense/items/<string:item>/<int:cost>/<string:category>', methods=['POST'])
-def add_expense(user, item, cost, category):
+def add_expense_to_be_deleted(user, item, cost, category):
         cur = mysql.connection.cursor()
         cur.execute('''SELECT MAX(id) from %s_expense_table'''%user)
         maxid = cur.fetchone()
@@ -236,6 +270,20 @@ def add_expense(user, item, cost, category):
         del cur
         return "Added %s!" % item
 
+
+@app.route('/<string:user>/expense/items1/<string:item>:<string:month>:<int:cost>:<string:category>', methods=['POST'])
+def add_expense_new(user, item, month, cost, category):
+        cur = mysql.connection.cursor()
+        cur.execute('''SELECT MAX(id) from %s_expense_table'''%user)
+        maxid = cur.fetchone()
+        ID = maxid[0]
+        if not maxid[0]:
+            ID = -1
+        month = date_from_monthstring(month)
+        cur.execute('''INSERT INTO %s_expense_table(id, name, cost, month, category) value (%s ,"%s", %s, %s, "%s")''' %(user, ID+1, item, cost, month, category))
+        mysql.connection.commit()
+        del cur
+        return "Added %s!" % item
 
 @app.route('/<string:user>/expense/limit/<int:mon_lim>', methods=['PUT'])
 def update_limit(user, mon_lim):

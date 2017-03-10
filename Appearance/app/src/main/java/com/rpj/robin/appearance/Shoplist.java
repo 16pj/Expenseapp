@@ -27,9 +27,10 @@ public class Shoplist extends AppCompatActivity {
     private ListView listView;
     private EditText editText;
     Sqealer sqealee;
-    String myURL = "http://192.168.1.21:35741";
 
-   // String myURL = "http://rojo16.pythonanywhere.com";
+    //String myURL = "http://192.168.1.21:35741";
+   //String myURL = "http://rojo16.pythonanywhere.com";
+    private String myURL = myconf.global_url;
 
 
     @Override

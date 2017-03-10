@@ -34,13 +34,17 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
         }
         // Lookup view for data population
         TextView tvname = (TextView) convertView.findViewById(R.id.checkedview);
-        TextView tvcost = (TextView) convertView.findViewById(R.id.separator);
-        Button more = (Button) convertView.findViewById(R.id.more);
+        TextView tvcost = (TextView) convertView.findViewById(R.id.cost_text);
+        TextView tvcategory = (TextView) convertView.findViewById(R.id.category_text);
+
+         Button more = (Button) convertView.findViewById(R.id.more);
 
          TextView headingview = (TextView) convertView.findViewById(R.id.heading);
+
         // Populate the data into the template view using the data object
         tvname.setText(expense_item.name);
         tvcost.setText(expense_item.cost);
+        tvcategory.setText(expense_item.category);
 
          String month = expense_item.date.substring(2);
          String year = "20" + expense_item.date.substring(0,2);

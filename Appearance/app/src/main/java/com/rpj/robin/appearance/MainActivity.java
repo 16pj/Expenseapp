@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
     //private String myURL = "http://192.168.1.25:35741";
 
     //String myURL = "http://rojo16.pythonanywhere.com";
+    private String myURL = myconf.global_url;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,3 +203,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+

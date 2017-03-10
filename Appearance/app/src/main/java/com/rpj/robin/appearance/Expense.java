@@ -43,13 +43,15 @@ public class Expense extends AppCompatActivity {
     private TextView heading;
     private String m_Text = "";
     private String  TOTAL_FLAG = "FALSE";
+    private String CATEGOY_FLAG = "FALSE";
     private String Selected_month = "";
     private String Selected_category = "DEFAULT";
+    private String Selected_category_total = "DEFAULT";
 
 
     //private String myURL = "http://192.168.1.21:35741";
-    private String myURL = "http://192.168.1.21:35741";
     //String myURL = "http://rojo16.pythonanywhere.com";
+    private String myURL = myconf.global_url;
 
 
     @Override
@@ -70,6 +72,7 @@ public class Expense extends AppCompatActivity {
         Adder.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                if(TOTAL_FLAG.equals("FALSE"))
                 onFullAdd();
                 return true;
             }
@@ -163,8 +166,73 @@ public class Expense extends AppCompatActivity {
                     item.setChecked(false);
                 else item.setChecked(true);
 
-                Toast.makeText(this, "Working on this feature", Toast.LENGTH_SHORT).show();
+                if (CATEGOY_FLAG.equals("FALSE")) {
+                    TOTAL_FLAG = "FALSE";
 
+                    final String[] c = {"GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+
+                    final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
+                            android.R.layout.simple_spinner_item, c);
+
+
+                    final Spinner sp_c = new Spinner(Expense.this);
+                    sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    sp_c.setAdapter(adp_c);
+
+                    sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            Selected_category_total = c[position];
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+
+                        }
+                    });
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+                    LinearLayout ll = new LinearLayout(this);
+                    ll.setOrientation(LinearLayout.VERTICAL);
+                    ll.addView(sp_c);
+
+
+                    builder.setView(ll);
+                    builder.setPositiveButton("Show", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                            String name = sharedpref.getString("username", "");
+
+                            String sURL = myURL + "/" + name + "/expense/batch_cat/" + Selected_category_total +  "/0";
+                            mylist.clear();
+                            adapter.notifyDataSetChanged();
+                            batch=1;
+                            new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+
+                            Toast.makeText(Expense.this, "SHOWING " + Selected_category_total + " ITEMS", Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        CATEGOY_FLAG = "FALSE";
+                        repopulate(null);
+                        dialog.cancel();
+                    }
+                });
+
+                    builder.create().show();
+
+                }
+                else {
+                    CATEGOY_FLAG = "FALSE";
+                    repopulate(null);
+                }
                 return true;
 
             default:
@@ -182,6 +250,7 @@ public class Expense extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         batch=1;
         TOTAL_FLAG="FALSE";
+        CATEGOY_FLAG = "FALSE";
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
 
     }
@@ -194,8 +263,12 @@ public class Expense extends AppCompatActivity {
          //   adapter.notifyDataSetChanged();
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
+            String sURL;
+            if(CATEGOY_FLAG.equals("FALSE"))
+                sURL = myURL + "/" + name + "/expense/batch/" + batch;
+            else
+                sURL = myURL + "/" + name + "/expense/batch_cat/" + Selected_category_total+ "/" + batch;
 
-            String sURL = myURL + "/" + name + "/expense/batch/" + batch;
             new Expense_GetUrlContentTask().execute(sURL, "SHOW");
             batch += 1;
         }
@@ -217,13 +290,11 @@ public class Expense extends AppCompatActivity {
             String name = editName.getText().toString();
             String num = editNum.getText().toString();
 
-            Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
-
             //num = Integer.parseInt(editNum.getText().toString());
 
             if (!name.equals("") && !num.equals("")) {
-
+                Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
                 name = name.replace(" ", "_");
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
@@ -378,7 +449,7 @@ public class Expense extends AppCompatActivity {
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
 
-                String sURL = myURL +"/" + shared_name+ "/expense/items/" + nam + "/" + cos + "/"+ Selected_category;
+                String sURL = myURL +"/" + shared_name+ "/expense/items1/" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
 
                 repopulate(null);
@@ -401,95 +472,98 @@ public class Expense extends AppCompatActivity {
 
     public void onEdit(final String idee, String edit_name, String edit_cost, int  edit_month, int edit_category ){
 
-        final String[] m = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+        if(TOTAL_FLAG.equals("FALSE")) {
 
-        final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+            final String[] m = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 
-        final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
-                android.R.layout.simple_spinner_item, m);
+            final String[] c = {"GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
 
-        final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
-                android.R.layout.simple_spinner_item, c);
+            final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
+                    android.R.layout.simple_spinner_item, m);
 
-        final EditText name = new EditText(Expense.this);
-        final EditText cost = new EditText(Expense.this);
-        name.setText(edit_name);
-        cost.setText(edit_cost);
-        name.setInputType(InputType.TYPE_CLASS_TEXT);
-        cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+            final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
+                    android.R.layout.simple_spinner_item, c);
 
-        final Spinner sp_m = new Spinner(Expense.this);
-        sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        sp_m.setAdapter(adp_m);
+            final EditText name = new EditText(Expense.this);
+            final EditText cost = new EditText(Expense.this);
+            name.setText(edit_name);
+            cost.setText(edit_cost);
+            name.setInputType(InputType.TYPE_CLASS_TEXT);
+            cost.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        sp_m.setSelection(edit_month);
-        sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Selected_month = m[position];
-            }
+            final Spinner sp_m = new Spinner(Expense.this);
+            sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            sp_m.setAdapter(adp_m);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            sp_m.setSelection(edit_month);
+            sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Selected_month = m[position];
+                }
 
-            }
-        });
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-        final Spinner sp_c = new Spinner(Expense.this);
-        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        sp_c.setAdapter(adp_c);
-        sp_c.setSelection(edit_category);
-        sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Selected_category = c[position];
-            }
+                }
+            });
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            final Spinner sp_c = new Spinner(Expense.this);
+            sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            sp_c.setAdapter(adp_c);
+            sp_c.setSelection(edit_category);
+            sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Selected_category = c[position];
+                }
 
-            }
-        });
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
-
-        LinearLayout ll=new LinearLayout(this);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        ll.addView(name);
-        ll.addView(cost);
-        ll.addView(sp_m);
-        ll.addView(sp_c);
+                }
+            });
 
 
-        builder.setView(ll);
-        builder.setPositiveButton("UPDATE",  new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String nam = name.getText().toString();
-                String cos = cost.getText().toString();
+            AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+            LinearLayout ll = new LinearLayout(this);
+            ll.setOrientation(LinearLayout.VERTICAL);
+            ll.addView(name);
+            ll.addView(cost);
+            ll.addView(sp_m);
+            ll.addView(sp_c);
 
 
-                nam = nam.replace(" ", "_");
-                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                String shared_name = sharedpref.getString("username", "");
+            builder.setView(ll);
+            builder.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    String nam = name.getText().toString();
+                    String cos = cost.getText().toString();
 
-                String sURL = myURL +"/" + shared_name+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
-                new Expense_GetUrlContentTask().execute(sURL, "EDIT");
 
-                repopulate(null);
-                // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
-            }
-        });
+                    nam = nam.replace(" ", "_");
+                    SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    String shared_name = sharedpref.getString("username", "");
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.create().show();
-        repopulate(null);
+                    String sURL = myURL + "/" + shared_name + "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":" + Selected_category;
+                    new Expense_GetUrlContentTask().execute(sURL, "EDIT");
+
+                    repopulate(null);
+                    // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.create().show();
+            repopulate(null);
+        }
     }
 
 
@@ -621,12 +695,19 @@ public class Expense extends AppCompatActivity {
                     String heading_text;
                     JSONArray jsonArray = new JSONArray(result);
 
+                    if(CATEGOY_FLAG.equals("FALSE"))
                     limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length() - 1).getString("limit")));
+                    else
+                        limit.setText("");
 
 
                     try {
+                        if(CATEGOY_FLAG.equals("FALSE"))
                             heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length() - 1).getString("total") + " SEK";
-                            heading.setText(heading_text);
+                        else
+                            heading_text = Selected_category + " TOTALS";
+
+                        heading.setText(heading_text);
 
                         for (int i = 0; i < jsonArray.length(); i++) {
                             mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
