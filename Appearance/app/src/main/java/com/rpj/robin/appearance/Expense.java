@@ -2,7 +2,6 @@ package com.rpj.robin.appearance;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,16 +43,13 @@ public class Expense extends AppCompatActivity {
     private TextView heading;
     private String m_Text = "";
     private String  TOTAL_FLAG = "FALSE";
+    private String CATEGOY_FLAG = "FALSE";
     private String Selected_month = "";
     private String Selected_category = "DEFAULT";
+    private String Selected_category_total = "DEFAULT";
 
 
-    private String myURL = "http://192.168.1.21:35741";
-
-    //String myURL = "http://rojo16.pythonanywhere.com";
-
-
-
+    private String myURL = myconf.global_url;
 
 
     @Override
@@ -74,6 +70,7 @@ public class Expense extends AppCompatActivity {
         Adder.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                if(TOTAL_FLAG.equals("FALSE"))
                 onFullAdd();
                 return true;
             }
@@ -113,9 +110,6 @@ public class Expense extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
-                final List<String> m = Arrays.asList("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-                        "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
-
                 final List<String> c = Arrays.asList("GROCERIES", "LEISURE", "NEEDS", "DEFAULT");
                 Expense_item selected_expense = mylist.get(position);
                 int mon_pos = Integer.parseInt(selected_expense.date.substring(2))-1;
@@ -134,7 +128,6 @@ public class Expense extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.expense_menu, menu);
         return true;
     }
@@ -153,8 +146,9 @@ public class Expense extends AppCompatActivity {
 
                     SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                     String name = sharedpref.getString("username", "");
+                    String passwd = sharedpref.getString("password", "");
 
-                    String sURL = myURL + "/" + name + "/expense/totals";
+                    String sURL = myURL + "/" + name +":" + passwd+ "/expense/totals";
                     mylist.clear();
                     adapter.notifyDataSetChanged();
                     new Expense_GetUrlContentTask().execute(sURL, "SHOW");
@@ -170,8 +164,74 @@ public class Expense extends AppCompatActivity {
                     item.setChecked(false);
                 else item.setChecked(true);
 
-                Toast.makeText(this, "Working on this feature", Toast.LENGTH_SHORT).show();
+                if (CATEGOY_FLAG.equals("FALSE")) {
+                    TOTAL_FLAG = "FALSE";
 
+                    final String[] c = {"GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+
+                    final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
+                            android.R.layout.simple_spinner_item, c);
+
+
+                    final Spinner sp_c = new Spinner(Expense.this);
+                    sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    sp_c.setAdapter(adp_c);
+
+                    sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            Selected_category_total = c[position];
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+
+                        }
+                    });
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+                    LinearLayout ll = new LinearLayout(this);
+                    ll.setOrientation(LinearLayout.VERTICAL);
+                    ll.addView(sp_c);
+
+
+                    builder.setView(ll);
+                    builder.setPositiveButton("Show", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                            String name = sharedpref.getString("username", "");
+                            String passwd = sharedpref.getString("password", "");
+
+                            String sURL = myURL + "/" + name +":" + passwd+ "/expense/batch_cat/" + Selected_category_total +  "/0";
+                            mylist.clear();
+                            adapter.notifyDataSetChanged();
+                            batch=1;
+                            new Expense_GetUrlContentTask().execute(sURL, "SHOW");
+
+                            Toast.makeText(Expense.this, "SHOWING " + Selected_category_total + " ITEMS", Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        CATEGOY_FLAG = "FALSE";
+                        repopulate(null);
+                        dialog.cancel();
+                    }
+                });
+
+                    builder.create().show();
+
+                }
+                else {
+                    CATEGOY_FLAG = "FALSE";
+                    repopulate(null);
+                }
                 return true;
 
             default:
@@ -183,11 +243,15 @@ public class Expense extends AppCompatActivity {
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL + "/" + name + "/expense/batch/0";
+        String sURL = myURL + "/" + name +":" + passwd+  "/expense/batch/0";
         mylist.clear();
+        adapter.notifyDataSetChanged();
+        listView.clearChoices();
         batch=1;
         TOTAL_FLAG="FALSE";
+        CATEGOY_FLAG = "FALSE";
         new Expense_GetUrlContentTask().execute(sURL, "SHOW");
 
     }
@@ -195,15 +259,19 @@ public class Expense extends AppCompatActivity {
     public void overpopulate(View view){
 
         if(TOTAL_FLAG.equals("FALSE")) {
-            if (mylist.get(mylist.size() - 1).name.equals(""))
-                mylist.remove(mylist.size() - 1);
-            adapter.notifyDataSetChanged();
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
 
-            String sURL = myURL + "/" + name + "/expense/batch/" + batch;
+            String sURL;
+            if(CATEGOY_FLAG.equals("FALSE"))
+                sURL = myURL + "/" + name +":" + passwd+ "/expense/batch/" + batch;
+            else
+                sURL = myURL + "/" + name +":" + passwd+ "/expense/batch_cat/" + Selected_category_total+ "/" + batch;
+
             new Expense_GetUrlContentTask().execute(sURL, "SHOW");
             batch += 1;
+            listView.clearChoices();
         }
     }
 
@@ -211,8 +279,10 @@ public class Expense extends AppCompatActivity {
     public void set_limit(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL +"/" + name+ "/expense/limit/" + m_Text;
+
+        String sURL = myURL +"/" + name+":" + passwd+ "/expense/limit/" + m_Text;
         new Expense_GetUrlContentTask().execute(sURL, "LIMIT");
         Toast.makeText(this, "Limit set to " + m_Text, Toast.LENGTH_SHORT).show();
     }
@@ -223,18 +293,16 @@ public class Expense extends AppCompatActivity {
             String name = editName.getText().toString();
             String num = editNum.getText().toString();
 
-            Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
-
-            //num = Integer.parseInt(editNum.getText().toString());
-
             if (!name.equals("") && !num.equals("")) {
-
+                Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, num, Toast.LENGTH_SHORT).show();
                 name = name.replace(" ", "_");
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
+                String passwd = sharedpref.getString("password", "");
 
-                String sURL = myURL + "/" + shared_name + "/expense/items/" + name + "/" + num + "/DEFAULT";
+
+                String sURL = myURL + "/" + shared_name + ":" + passwd+ "/expense/items/" + name + "/" + num + "/DEFAULT";
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
                 editName.setText("");
                 editNum.setText("");
@@ -248,19 +316,20 @@ public class Expense extends AppCompatActivity {
 
     public void onRemove(View view){
         if(TOTAL_FLAG.equals("FALSE")) {
-            listView.clearChoices();
             if (mylist.size() == 0) return;
 
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String shared_name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
 
             for (Expense_item item : selecteditems) {
                 String thing = item.name;
                 thing = thing.replace(" ", "_");
-                String sURL = myURL + "/" + shared_name + "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
+                String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
 
                 new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             }
+            listView.clearChoices();
             selecteditems.clear();
             repopulate(null);
         }
@@ -270,13 +339,9 @@ public class Expense extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Set Limit");
 
-// Set up the input
         final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
-
-// Set up the buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -311,10 +376,10 @@ public class Expense extends AppCompatActivity {
         final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
 
 
-        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, m);
 
-        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
+        final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, c);
 
         final EditText name = new EditText(Expense.this);
@@ -327,9 +392,13 @@ public class Expense extends AppCompatActivity {
         final Spinner sp_m = new Spinner(Expense.this);
         sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         sp_m.setAdapter(adp_m);
-        int pos = 0;
-        pos = Integer.parseInt(mylist.get(0).date.substring(2))-1;
-        sp_m.setSelection(pos);
+        int pos;
+        try {
+            pos = Integer.parseInt(mylist.get(0).date.substring(2)) - 1;
+        }catch (Exception e){
+            pos = 0;
+        }
+            sp_m.setSelection(pos);
         sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -379,12 +448,13 @@ public class Expense extends AppCompatActivity {
                 nam = nam.replace(" ", "_");
                 SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
                 String shared_name = sharedpref.getString("username", "");
+                String passwd = sharedpref.getString("password", "");
 
-                String sURL = myURL +"/" + shared_name+ "/expense/items/" + nam + "/" + cos + "/"+ Selected_category;
+
+                String sURL = myURL +"/" + shared_name+":" + passwd+ "/expense/items1/" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
 
                 repopulate(null);
-               // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -403,95 +473,98 @@ public class Expense extends AppCompatActivity {
 
     public void onEdit(final String idee, String edit_name, String edit_cost, int  edit_month, int edit_category ){
 
-        final String[] m = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+        if(TOTAL_FLAG.equals("FALSE")) {
 
-        final String[] c = { "GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
+            final String[] m = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 
-        final ArrayAdapter<String> adp_m = new ArrayAdapter<String>(Expense.this,
-                android.R.layout.simple_spinner_item, m);
+            final String[] c = {"GROCERIES", "LEISURE", "NEEDS", "DEFAULT"};
 
-        final ArrayAdapter<String> adp_c = new ArrayAdapter<String>(Expense.this,
-                android.R.layout.simple_spinner_item, c);
+            final ArrayAdapter<String> adp_m = new ArrayAdapter<>(Expense.this,
+                    android.R.layout.simple_spinner_item, m);
 
-        final EditText name = new EditText(Expense.this);
-        final EditText cost = new EditText(Expense.this);
-        name.setText(edit_name);
-        cost.setText(edit_cost);
-        name.setInputType(InputType.TYPE_CLASS_TEXT);
-        cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+            final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
+                    android.R.layout.simple_spinner_item, c);
 
-        final Spinner sp_m = new Spinner(Expense.this);
-        sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        sp_m.setAdapter(adp_m);
+            final EditText name = new EditText(Expense.this);
+            final EditText cost = new EditText(Expense.this);
+            name.setText(edit_name);
+            cost.setText(edit_cost);
+            name.setInputType(InputType.TYPE_CLASS_TEXT);
+            cost.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        sp_m.setSelection(edit_month);
-        sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Selected_month = m[position];
-            }
+            final Spinner sp_m = new Spinner(Expense.this);
+            sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            sp_m.setAdapter(adp_m);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            sp_m.setSelection(edit_month);
+            sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Selected_month = m[position];
+                }
 
-            }
-        });
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-        final Spinner sp_c = new Spinner(Expense.this);
-        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        sp_c.setAdapter(adp_c);
-        sp_c.setSelection(edit_category);
-        sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Selected_category = c[position];
-            }
+                }
+            });
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            final Spinner sp_c = new Spinner(Expense.this);
+            sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            sp_c.setAdapter(adp_c);
+            sp_c.setSelection(edit_category);
+            sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Selected_category = c[position];
+                }
 
-            }
-        });
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
-
-        LinearLayout ll=new LinearLayout(this);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        ll.addView(name);
-        ll.addView(cost);
-        ll.addView(sp_m);
-        ll.addView(sp_c);
+                }
+            });
 
 
-        builder.setView(ll);
-        builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String nam = name.getText().toString();
-                String cos = cost.getText().toString();
+            AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
+
+            LinearLayout ll = new LinearLayout(this);
+            ll.setOrientation(LinearLayout.VERTICAL);
+            ll.addView(name);
+            ll.addView(cost);
+            ll.addView(sp_m);
+            ll.addView(sp_c);
 
 
-                nam = nam.replace(" ", "_");
-                SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                String shared_name = sharedpref.getString("username", "");
+            builder.setView(ll);
+            builder.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    String nam = name.getText().toString();
+                    String cos = cost.getText().toString();
 
-                String sURL = myURL +"/" + shared_name+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":"+ Selected_category;
-                new Expense_GetUrlContentTask().execute(sURL, "EDIT");
 
-                repopulate(null);
-                // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
-            }
-        });
+                    nam = nam.replace(" ", "_");
+                    SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
+                    String shared_name = sharedpref.getString("username", "");
+                    String passwd = sharedpref.getString("password", "");
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        builder.create().show();
-        repopulate(null);
+                    String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":" + Selected_category;
+                    new Expense_GetUrlContentTask().execute(sURL, "EDIT");
+
+                    repopulate(null);
+                }
+            });
+
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.create().show();
+            repopulate(null);
+        }
     }
 
 
@@ -589,7 +662,6 @@ public class Expense extends AppCompatActivity {
                         URL url = new URL(params[0]);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("GET");
-                        //connection.setDoOutput(true);
                         connection.setConnectTimeout(5000);
                         connection.setReadTimeout(5000);
                         connection.connect();
@@ -617,21 +689,27 @@ public class Expense extends AppCompatActivity {
 
 
         protected void onPostExecute(String result) {
-
-            String test="0000";
-
+            if (result == null)
+                return;
 
             if(TOTAL_FLAG.equals("FALSE")) {
                 try {
                     String heading_text;
                     JSONArray jsonArray = new JSONArray(result);
 
+                    if(CATEGOY_FLAG.equals("FALSE"))
                     limit.setText(String.format("LIMIT: %s", jsonArray.getJSONObject(jsonArray.length() - 1).getString("limit")));
+                    else
+                        limit.setText("");
 
 
                     try {
+                        if(CATEGOY_FLAG.equals("FALSE"))
                             heading_text = "MON TOTAL: " + jsonArray.getJSONObject(jsonArray.length() - 1).getString("total") + " SEK";
-                            heading.setText(heading_text);
+                        else
+                            heading_text = Selected_category + " TOTALS";
+
+                        heading.setText(heading_text);
 
                         for (int i = 0; i < jsonArray.length(); i++) {
                             mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
@@ -640,8 +718,7 @@ public class Expense extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
-                    mylist.add(new Expense_item("", "", "", test, ""));
+
                     adapter.notifyDataSetChanged();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -657,14 +734,12 @@ public class Expense extends AppCompatActivity {
                     for (int i = 0; i < jsonArray.length(); i++) {
                         mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),""));
                     }
-                    test = jsonArray.getJSONObject(jsonArray.length() - 1).getString("date");
-                    mylist.add(new Expense_item("", "", "", test, ""));
+
                     adapter.notifyDataSetChanged();
 
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
 
             }
 

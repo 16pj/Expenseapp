@@ -1,45 +1,23 @@
 package com.rpj.robin.appearance;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-import android.support.annotation.StringRes;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
 
 
 
 public class MainActivity extends AppCompatActivity {
 
+    private String myURL = myconf.global_url;
 
-    private String enter;
-    //private String myURL = "http://192.168.1.25:35741";
-
-    String myURL = "http://rojo16.pythonanywhere.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -205,8 +182,6 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (output.equals("ON")){
                 Toast.makeText(this, "SNAP MODE for Expense needs working.\nTry Going Online for now :)", Toast.LENGTH_LONG).show();
-                //Intent j = new Intent(MainActivity.this, Expense_offline.class);
-                //startActivity(j);
             }
         }
     }
@@ -221,12 +196,5 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    public boolean getInfo(String userName, String userPass){
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String name = sharedpref.getString("username", "");
-        String passwd = sharedpref.getString("password", "");
-
-        return userName.equals(name) && userPass.equals(passwd);
-    }
-
 }
+

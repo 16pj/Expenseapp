@@ -1,25 +1,17 @@
 package com.rpj.robin.appearance;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import org.json.JSONArray;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -32,13 +24,12 @@ public class Shoplist extends AppCompatActivity {
     private ArrayList<String> mylist;
     private ArrayList<String> selecteditems;
     private ArrayAdapter<String> adapter;
-    private int i;
     private ListView listView;
     private EditText editText;
     Sqealer sqealee;
-    String myURL = "http://192.168.1.21:35741";
 
-   // String myURL = "http://rojo16.pythonanywhere.com";
+
+    private String myURL = myconf.global_url;
 
 
     @Override
@@ -53,7 +44,7 @@ public class Shoplist extends AppCompatActivity {
         mylist = new ArrayList<>();
         editText = (EditText) findViewById(R.id.editText);
 
-        adapter = new ArrayAdapter<String>(this, R.layout.list_items, R.id.checkedview, mylist);
+        adapter = new ArrayAdapter<>(this, R.layout.list_items, R.id.checkedview, mylist);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -88,10 +79,13 @@ public class Shoplist extends AppCompatActivity {
     public void repopulate(View view){
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
 
-        String sURL = myURL + "/" + name+ "/shoplist/items";
+
+        String sURL = myURL + "/" + name+ ":" + passwd + "/shoplist/items";
         mylist.clear();
         adapter.notifyDataSetChanged();
+        listView.clearChoices();
         new Shop_GetUrlContentTask().execute(sURL, "SHOW");
         adapter.notifyDataSetChanged();
     }
@@ -103,10 +97,10 @@ public class Shoplist extends AppCompatActivity {
         if (!thing.equals("")) {
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
+            String passwd = sharedpref.getString("password", "");
+
             thing = thing.replace(" ", "_");
-            String sURL = myURL + "/" + name+ "/shoplist/items/" + "_"+thing;
-            //mylist.add(thing);
-            //adapter.notifyDataSetChanged();
+            String sURL = myURL + "/" + name + ":" + passwd + "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "ADD");
             editText.setText("");
             repopulate(null);
@@ -119,12 +113,13 @@ public class Shoplist extends AppCompatActivity {
         if(mylist.size() == 0) return;
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
         for (String item:selecteditems) {
             if (item.startsWith("*"))
                 item = item.substring(1);
             String thing = item.replace(" ", "_");
-            //mylist.remove(item);
-            String sURL = myURL + "/" + name+ "/shoplist/items/" + thing;
+            String sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "DELETE");
         }
         repopulate(null);
@@ -137,20 +132,22 @@ public class Shoplist extends AppCompatActivity {
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
+        String passwd = sharedpref.getString("password", "");
+
 
         for (String item:selecteditems){
             if (item.startsWith("*")) {
                 mylist.remove(item);
                 mylist.add(item.substring(1));
                 String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + "/shoplist/unprioritize/" + thing.substring(1);
+                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/unprioritize/" + thing.substring(1);
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }
             else {
                 mylist.remove(item);
                 mylist.add("*" + item);
                 String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + "/shoplist/prioritize/" + thing;
+                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/prioritize/" + thing;
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }}
         listView.clearChoices();
@@ -158,17 +155,18 @@ public class Shoplist extends AppCompatActivity {
         repopulate(null);
 
     }
-
+/*
     public void onCost(View view) {
         ;
     }
-
+*/
 
     private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
         protected String doInBackground(String... params) {
 
-            if(params[1].equals("ADD")) {
+            switch (params[1]) {
 
+                case ("ADD") :
                 try {
                     URL url = new URL(params[0]);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -186,10 +184,9 @@ public class Shoplist extends AppCompatActivity {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }}
-
-            else if (params[1].equals("DELETE")){
-
+                }
+            break;
+            case ("DELETE"):
                 try {
                     URL url = new URL(params[0]);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -207,9 +204,9 @@ public class Shoplist extends AppCompatActivity {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }}
-
-            else if (params[1].equals("PRIORITY")){
+                }
+            break;
+            case ("PRIORITY"):
 
                 try {
                     URL url = new URL(params[0]);
@@ -228,14 +225,13 @@ public class Shoplist extends AppCompatActivity {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }}
-
-            else if (params[1].equals("SHOW")) {
+                }
+            break;
+            case ("SHOW"):
                 try {
                     URL url = new URL(params[0]);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
-                    //connection.setDoOutput(true);
                     connection.setConnectTimeout(5000);
                     connection.setReadTimeout(5000);
                     connection.connect();
@@ -262,10 +258,12 @@ public class Shoplist extends AppCompatActivity {
         */}
 
         protected void onPostExecute(String result) {
+            if (result == null)
+                return;
             String item;
             try {
                 JSONArray jsonArray = new JSONArray(result);
-                for (i =0; i< jsonArray.length(); i++) {
+                for (int i =0; i< jsonArray.length(); i++) {
                     if (jsonArray.getJSONObject(i).getString("priority").equals("YES")) {
                         item = "*" + jsonArray.getJSONObject(i).getString("name");
                         item = item.replace("_", " ");

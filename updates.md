@@ -26,4 +26,7 @@ appearance beta version is ready.
 
 Spree is the name of the App
 Spree now has a SNAP mode, which saves the last retrieved list
+Spree now has edit option and monthly totals along with option to add more details
 Spree needs work on security of password, operations and refinemet in code
+Spree now has a secure md5 on password, json responses and refine code
+Spree now has edit, month totals, category wise items

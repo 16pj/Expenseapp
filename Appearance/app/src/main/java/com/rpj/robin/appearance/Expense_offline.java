@@ -11,6 +11,5 @@ public class Expense_offline extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_expense_offline);
         Toast.makeText(this, "SHOWING SNAPSHOT OF LAST SAVED LIST", Toast.LENGTH_SHORT).show();
-
     }
 }
