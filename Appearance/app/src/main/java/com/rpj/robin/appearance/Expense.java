@@ -3,6 +3,7 @@ package com.rpj.robin.appearance;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -317,16 +318,16 @@ public class Expense extends AppCompatActivity {
     public void onRemove(View view){
         if(TOTAL_FLAG.equals("FALSE")) {
             if (mylist.size() == 0) return;
-
+            String thing;
+            String sURL;
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String shared_name = sharedpref.getString("username", "");
             String passwd = sharedpref.getString("password", "");
 
             for (Expense_item item : selecteditems) {
-                String thing = item.name;
+                thing = item.name;
                 thing = thing.replace(" ", "_");
-                String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
-
+                sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
                 new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             }
             listView.clearChoices();
