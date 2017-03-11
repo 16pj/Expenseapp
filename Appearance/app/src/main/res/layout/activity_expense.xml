@@ -47,9 +47,10 @@
         android:layout_alignParentEnd="true"
         android:fontFamily="casual"
         android:textStyle="normal|bold"
+        android:textColor="#C7CDFF"
         android:textSize="18sp"
-        android:backgroundTint="#D1D0D1"
-        android:background="@drawable/rounded_button"/>
+        android:background="@drawable/button_rem"
+        />
 
     <ListView
         android:layout_width="match_parent"
@@ -67,7 +68,7 @@
         android:onClick="repopulate"
         android:id="@+id/name"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:background="@android:color/holo_green_light"
+        android:background="#C9C9F7"
         android:layout_centerHorizontal="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
@@ -96,7 +97,7 @@
         android:ems="10"
         android:id="@+id/num"
         android:onClick="repopulate"
-        android:background="#8DB600"
+        android:background="#C9C9F7"
         android:hint="Cost"
         android:fontFamily="casual"
         android:textSize="14sp"
@@ -112,11 +113,12 @@
         android:onClick="onAdd"
         android:fontFamily="casual"
         android:textStyle="normal|bold"
+        android:textColor="#C7CDFF"
         android:textSize="18sp"
-        android:backgroundTint="#D1D0D1"
-        android:background="@drawable/rounded_button"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
+        android:background="@drawable/button_add"
+        android:layout_alignParentStart="true"
+        />
 
 
 </RelativeLayout>
