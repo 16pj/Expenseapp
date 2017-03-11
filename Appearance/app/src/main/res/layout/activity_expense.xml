@@ -8,6 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#E1E6FF"
     tools:context="com.rpj.robin.appearance.Expense">
 
     <TextView
@@ -37,18 +38,6 @@
         android:layout_alignParentEnd="true" />
 
     <Button
-        android:text="Add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/ADD"
-        android:onClick="onAdd"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:fontFamily="casual"
-        android:textStyle="normal|bold"
-        android:textSize="18sp" />
-
-    <Button
         android:text="DEL"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -58,7 +47,9 @@
         android:layout_alignParentEnd="true"
         android:fontFamily="casual"
         android:textStyle="normal|bold"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:backgroundTint="#D1D0D1"
+        android:background="@drawable/rounded_button"/>
 
     <ListView
         android:layout_width="match_parent"
@@ -113,7 +104,19 @@
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE" />
 
-
+    <Button
+        android:text="Add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ADD"
+        android:onClick="onAdd"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp"
+        android:backgroundTint="#D1D0D1"
+        android:background="@drawable/rounded_button"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>

@@ -1,0 +1,7 @@
+<shape android:shape="rectangle"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <stroke android:width="40dp"/>
+    <padding android:left="@dimen/activity_horizontal_margin" android:right="@dimen/activity_horizontal_margin"/>
+    <corners android:radius="50dp"/>
+
+    </shape>
