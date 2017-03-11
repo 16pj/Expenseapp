@@ -16,9 +16,6 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    //private String myURL = "http://192.168.1.25:35741";
-
-    //String myURL = "http://rojo16.pythonanywhere.com";
     private String myURL = myconf.global_url;
 
 
@@ -54,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -186,8 +182,6 @@ public class MainActivity extends AppCompatActivity {
             }
             else if (output.equals("ON")){
                 Toast.makeText(this, "SNAP MODE for Expense needs working.\nTry Going Online for now :)", Toast.LENGTH_LONG).show();
-                //Intent j = new Intent(MainActivity.this, Expense_offline.class);
-                //startActivity(j);
             }
         }
     }

@@ -28,8 +28,7 @@ public class Shoplist extends AppCompatActivity {
     private EditText editText;
     Sqealer sqealee;
 
-    //String myURL = "http://192.168.1.21:35741";
-   //String myURL = "http://rojo16.pythonanywhere.com";
+
     private String myURL = myconf.global_url;
 
 
@@ -86,6 +85,7 @@ public class Shoplist extends AppCompatActivity {
         String sURL = myURL + "/" + name+ ":" + passwd + "/shoplist/items";
         mylist.clear();
         adapter.notifyDataSetChanged();
+        listView.clearChoices();
         new Shop_GetUrlContentTask().execute(sURL, "SHOW");
         adapter.notifyDataSetChanged();
     }
@@ -100,9 +100,7 @@ public class Shoplist extends AppCompatActivity {
             String passwd = sharedpref.getString("password", "");
 
             thing = thing.replace(" ", "_");
-            String sURL = myURL + "/" + name + ":" + passwd + "/shoplist/items/" + "_"+thing;
-            //mylist.add(thing);
-            //adapter.notifyDataSetChanged();
+            String sURL = myURL + "/" + name + ":" + passwd + "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "ADD");
             editText.setText("");
             repopulate(null);
@@ -121,7 +119,6 @@ public class Shoplist extends AppCompatActivity {
             if (item.startsWith("*"))
                 item = item.substring(1);
             String thing = item.replace(" ", "_");
-            //mylist.remove(item);
             String sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "DELETE");
         }
@@ -235,7 +232,6 @@ public class Shoplist extends AppCompatActivity {
                     URL url = new URL(params[0]);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
-                    //connection.setDoOutput(true);
                     connection.setConnectTimeout(5000);
                     connection.setReadTimeout(5000);
                     connection.connect();
@@ -262,6 +258,8 @@ public class Shoplist extends AppCompatActivity {
         */}
 
         protected void onPostExecute(String result) {
+            if (result == null)
+                return;
             String item;
             try {
                 JSONArray jsonArray = new JSONArray(result);

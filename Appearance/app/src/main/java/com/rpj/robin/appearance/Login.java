@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -23,9 +26,8 @@ public class Login extends AppCompatActivity {
     private EditText editname;
     private EditText editpass;
     private String uname;
+    private String upass;
 
-    //private String myURL = "http://192.168.1.21:35741";
-   //String myURL = "http://rojo16.pythonanywhere.com";
     private String myURL = myconf.global_url;
 
     @Override
@@ -56,7 +58,7 @@ public class Login extends AppCompatActivity {
     public void onSign(View view) {
 
         uname = editname.getText().toString();
-        String upass = editpass.getText().toString();
+        upass = editpass.getText().toString();
         upass = get_md5_from_string(upass);
 
         if (uname.equals("") || upass.equals("")){
@@ -71,7 +73,9 @@ public class Login extends AppCompatActivity {
 
     public void onCreateTables(){
         uname = editname.getText().toString();
-        String sURL = myURL + "/RESET/" + uname;
+        upass = editpass.getText().toString();
+        upass = get_md5_from_string(upass);
+        String sURL = myURL + "/RESET/" + uname+ ":" + upass;
         new GetUrlContentTask().execute(sURL, "CREATE_TABLES");
     }
 
@@ -83,7 +87,7 @@ public class Login extends AppCompatActivity {
     public void onRESET(View view) {
 
         uname = editname.getText().toString();
-        String upass = editpass.getText().toString();
+        upass = editpass.getText().toString();
         upass = get_md5_from_string(upass);
 
         if (uname.equals("") || upass.equals("")){
@@ -139,7 +143,6 @@ public class Login extends AppCompatActivity {
                         URL url = new URL(params[0]);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("GET");
-                       // connection.setDoOutput(true);
                         connection.setConnectTimeout(5000);
                         connection.setReadTimeout(5000);
                         connection.connect();
@@ -204,7 +207,6 @@ public class Login extends AppCompatActivity {
                         URL url = new URL(params[0]);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("GET");
-                        //connection.setDoOutput(true);
                         connection.setConnectTimeout(5000);
                         connection.setReadTimeout(5000);
                         connection.connect();
@@ -227,8 +229,6 @@ public class Login extends AppCompatActivity {
         }
 
         protected void onProgressUpdate(String... progress) {
-
-
         }
 
 
@@ -238,49 +238,43 @@ public class Login extends AppCompatActivity {
             {Toast.makeText(Login.this, "Something went wrong!", Toast.LENGTH_LONG).show();
             return;}
 
+            try {
+                JSONArray jsonArray = new JSONArray(result);
+                result = jsonArray.getJSONObject(0).getString("result");
 
-            if (result.trim().equals("CREATED")){
-               Toast.makeText(Login.this, "SUCCESSFULLY REGISTERED", Toast.LENGTH_LONG).show();
-               onCreateTables();
-           }
-           else if(result.trim().equals("EXISTS")){
-               Toast.makeText(Login.this, "USERNAME TAKEN! TRY ANOTHER.", Toast.LENGTH_SHORT).show();
-            }
+                if (result.trim().equals("CREATED")) {
+                    Toast.makeText(Login.this, "SUCCESSFULLY REGISTERED", Toast.LENGTH_LONG).show();
+                    onCreateTables();
+                } else if (result.trim().equals("EXISTS")) {
+                    Toast.makeText(Login.this, "USERNAME TAKEN! TRY ANOTHER.", Toast.LENGTH_SHORT).show();
+                } else if (result.trim().equals("LOGGED")) {
+                    Toast.makeText(Login.this, "SUCCESSFULLY LOGGED IN", Toast.LENGTH_SHORT).show();
+                    saveInfo(editname.getText().toString(), get_md5_from_string(editpass.getText().toString()));
+                    Intent i = new Intent(Login.this, MainActivity.class);
+                    startActivity(i);
+                } else if (result.trim().equals("WRONG")) {
+                    Toast.makeText(Login.this, "WRONG ID/PASS", Toast.LENGTH_SHORT).show();
+                } else if (result.trim().equals("REFRESHED")) {
+                    Toast.makeText(Login.this, "READY! SIGN IN TO PLAY!", Toast.LENGTH_SHORT).show();
+                } else if (result.trim().equals("FAILED")) {
+                    Toast.makeText(Login.this, "SOMETHING WENT WRONG.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Login.this, result, Toast.LENGTH_SHORT).show();
+                }
 
-           else if(result.trim().equals("LOGGED")){
-               Toast.makeText(Login.this, "SUCCESSFULLY LOGGED IN", Toast.LENGTH_SHORT).show();
-               saveInfo(editname.getText().toString(), get_md5_from_string(editpass.getText().toString()));
-               Intent i = new Intent(Login.this, MainActivity.class);
-               startActivity(i);
-           }
-
-           else if(result.trim().equals("WRONG")){
-               Toast.makeText(Login.this, "WRONG ID/PASS", Toast.LENGTH_SHORT).show();
-           }
-
-           else if(result.trim().equals("REFRESHED")){
-               Toast.makeText(Login.this, "READY! SIGN IN TO PLAY!", Toast.LENGTH_SHORT).show();
-           }
-
-           else if(result.trim().equals("FAILED")){
-               Toast.makeText(Login.this, "SOMETHING WENT WRONG.", Toast.LENGTH_SHORT).show();
-           }
-
-            else {
-               Toast.makeText(Login.this, result, Toast.LENGTH_SHORT).show();
-           }
-
+            }catch (Exception e){
+                e.printStackTrace();
+                Toast.makeText(Login.this, "Something went wrong!", Toast.LENGTH_LONG).show();
+                }
         }
     }
 
     public String get_md5_from_string(String s) {
         try {
-            // Create MD5 Hash
             MessageDigest digest = MessageDigest.getInstance("MD5");
             digest.update(s.getBytes());
             byte messageDigest[] = digest.digest();
 
-            // Create Hex String
             StringBuilder hexString = new StringBuilder();
             for(int i:messageDigest)
                 hexString.append(Integer.toHexString(0xFF & i));

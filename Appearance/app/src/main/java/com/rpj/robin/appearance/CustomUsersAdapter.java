@@ -20,7 +20,6 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
      @Override
      public View getView(int position, View convertView, ViewGroup parent) {
-        // Get the data item for this position
         Expense_item expense_item = getItem(position);
         Expense_item next_item;
 
@@ -28,11 +27,9 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
          if(position != 0) next_item = getItem(position-1);
          else next_item = getItem(position);
        
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
            convertView = LayoutInflater.from(getContext()).inflate(R.layout.expense_items, parent, false);
         }
-        // Lookup view for data population
         TextView tvname = (TextView) convertView.findViewById(R.id.checkedview);
         TextView tvcost = (TextView) convertView.findViewById(R.id.cost_text);
         TextView tvcategory = (TextView) convertView.findViewById(R.id.category_text);
@@ -41,7 +38,6 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
          TextView headingview = (TextView) convertView.findViewById(R.id.heading);
 
-        // Populate the data into the template view using the data object
         tvname.setText(expense_item.name);
         tvcost.setText(expense_item.cost);
         tvcategory.setText(expense_item.category);
@@ -75,7 +71,6 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
          else {
              headingview.setVisibility(View.INVISIBLE);
          }
-        // Return the completed view to render on screen
         return convertView;
     }
 

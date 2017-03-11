@@ -68,15 +68,10 @@ class Sqealer extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE " + COLUMN_ITEM + "= \"" + item + "\" ;" );
     }
 
-    //PRINT OUT VALUES
-
     public String getValues(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_NAME + " WHERE 1";
-
-
-        //CURSOR POSITION
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
@@ -101,8 +96,6 @@ class Sqealer extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_NAME + " WHERE 1";
 
-
-        //CURSOR POSITION
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();

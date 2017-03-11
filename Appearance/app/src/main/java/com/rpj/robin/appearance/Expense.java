@@ -49,8 +49,6 @@ public class Expense extends AppCompatActivity {
     private String Selected_category_total = "DEFAULT";
 
 
-    //private String myURL = "http://192.168.1.21:35741";
-    //String myURL = "http://rojo16.pythonanywhere.com";
     private String myURL = myconf.global_url;
 
 
@@ -130,7 +128,6 @@ public class Expense extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.expense_menu, menu);
         return true;
     }
@@ -251,6 +248,7 @@ public class Expense extends AppCompatActivity {
         String sURL = myURL + "/" + name +":" + passwd+  "/expense/batch/0";
         mylist.clear();
         adapter.notifyDataSetChanged();
+        listView.clearChoices();
         batch=1;
         TOTAL_FLAG="FALSE";
         CATEGOY_FLAG = "FALSE";
@@ -261,9 +259,6 @@ public class Expense extends AppCompatActivity {
     public void overpopulate(View view){
 
         if(TOTAL_FLAG.equals("FALSE")) {
-         //   if (mylist.get(mylist.size() - 1).name.equals(""))
-         //       mylist.remove(mylist.size() - 1);
-         //   adapter.notifyDataSetChanged();
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String name = sharedpref.getString("username", "");
             String passwd = sharedpref.getString("password", "");
@@ -276,6 +271,7 @@ public class Expense extends AppCompatActivity {
 
             new Expense_GetUrlContentTask().execute(sURL, "SHOW");
             batch += 1;
+            listView.clearChoices();
         }
     }
 
@@ -296,8 +292,6 @@ public class Expense extends AppCompatActivity {
         if(TOTAL_FLAG.equals("FALSE")) {
             String name = editName.getText().toString();
             String num = editNum.getText().toString();
-
-            //num = Integer.parseInt(editNum.getText().toString());
 
             if (!name.equals("") && !num.equals("")) {
                 Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
@@ -345,13 +339,9 @@ public class Expense extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Set Limit");
 
-// Set up the input
         final EditText input = new EditText(this);
-// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
-
-// Set up the buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -465,7 +455,6 @@ public class Expense extends AppCompatActivity {
                 new Expense_GetUrlContentTask().execute(sURL, "ADD");
 
                 repopulate(null);
-               // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -564,7 +553,6 @@ public class Expense extends AppCompatActivity {
                     new Expense_GetUrlContentTask().execute(sURL, "EDIT");
 
                     repopulate(null);
-                    // Toast.makeText(Expense.this, nam + "\n" + cos + "\n" + Selected_category + "\n" + Selected_month, Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -674,7 +662,6 @@ public class Expense extends AppCompatActivity {
                         URL url = new URL(params[0]);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("GET");
-                        //connection.setDoOutput(true);
                         connection.setConnectTimeout(5000);
                         connection.setReadTimeout(5000);
                         connection.connect();
@@ -702,6 +689,8 @@ public class Expense extends AppCompatActivity {
 
 
         protected void onPostExecute(String result) {
+            if (result == null)
+                return;
 
             if(TOTAL_FLAG.equals("FALSE")) {
                 try {
