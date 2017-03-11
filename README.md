@@ -6,7 +6,27 @@ An Android App with a Python REST server backend that tracks expenses and also m
 
 I. FRONTEND: Android App
 
+Home page:
 
+The main page has two main buttons on the first page: 1) Shopping list and 2) Expense tracker
+On the first page, the drop down options available are 
+1) Settings - Which has options to login, signup and reset
+2) SNAP mode - An option to view the list offline (no edit/add option)
+3) Signout - To sign out of the account
+
+Shoplist:
+
+The shoplist page has options to add, delete items
+There is also option to star/ unstar items using the same button. The starred items go up on the list.
+Multiple items can be quickly added by typing them with commas. eg: eggs,apple,orange
+
+Expense list:
+
+The expense list page has option to quickly add an expense by typing item and cost and clicking the ADD button.
+But pressing the ADD buttong without typing the item name,cost displays a detailed window to add item. (Pressing and holding ADD leads to the same).
+Clicking on the limit text displays a window to change limit value.
+The added items can be edited by pressing and holding the individual items.
+There is a drop down for displaying month totals and category wise items
 
 
 II. BACKEND: Python REST Server
@@ -15,7 +35,7 @@ II. BACKEND: Python REST Server
 
 	FIRST CREATE A TABLE TO STORE USER DATA
 
-	*create table user_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), password VARCHAR(20));
+	*create table user_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), password VARCHAR(50));
 
 
 	
@@ -27,7 +47,7 @@ II. BACKEND: Python REST Server
  
 	By using :
 
-	1) create table expense_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20));
+	1) create table expense_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified VARCHAR(20));
 
 	2) create table shoplist_table(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10));
 
