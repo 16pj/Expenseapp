@@ -80,7 +80,7 @@ class Sqealer extends SQLiteOpenHelper {
         int columnnumber = c.getColumnIndex("name");
 
         do {
-            if (c.getString(c.getColumnIndex("name")) != null) {
+            if (c.getString(columnnumber) != null) {
 
                 dbString += c.getString(columnnumber);
                 dbString += "\n";
@@ -104,7 +104,7 @@ class Sqealer extends SQLiteOpenHelper {
         int columnnumber = c.getColumnIndex("name");
 
         do {
-            if (c.getString(c.getColumnIndex("name")) != null) {
+            if (c.getString(columnnumber) != null) {
 
                 myArray.add(c.getString(columnnumber));
             }

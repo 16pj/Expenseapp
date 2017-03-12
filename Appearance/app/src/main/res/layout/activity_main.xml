@@ -12,7 +12,6 @@
     tools:context="com.rpj.robin.appearance.MainActivity">
 
     <Button
-        android:text="@string/title_activity_shoplist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/shopButton"
@@ -20,6 +19,8 @@
         android:layout_marginTop="10dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
+        android:paddingTop="30dp"
+        android:drawableTop="@drawable/ic_shop"
         android:backgroundTint="@android:color/holo_red_dark"
         android:onClick="onlist1"
         android:textAppearance="@style/TextAppearance.AppCompat.Button"
@@ -30,7 +31,6 @@
         android:background="@drawable/rounded_button"/>
 
     <Button
-        android:text="@string/title_activity_expense"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/expenseButton"
@@ -39,6 +39,8 @@
         android:layout_alignParentTop="true"
         android:backgroundTint="#4C39AB"
         android:layout_alignParentStart="true"
+        android:drawableTop="@drawable/ic_expense"
+        android:paddingTop="50dp"
         android:onClick="onlist2"
         android:textAppearance="@style/TextAppearance.AppCompat.Button"
         android:fontFamily="casual"
