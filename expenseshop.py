@@ -20,6 +20,8 @@ app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
 
 mysql = MySQL(app)
+days_before_cleanup = 3
+
 
 @app.route('/')
 def index():
@@ -32,7 +34,7 @@ def index():
 def get_items(user, passwd):
     if verify_user(user, passwd):
         cur = mysql.connection.cursor()
-        cur.execute('''SELECT name, priority from %s_shoplist_table order by priority desc''' % user)
+        cur.execute('''SELECT name, priority from %s_shoplist_table desc where deleted != 1 order by priority ''' % user)
         ret_val = cur.fetchall()
         sting = [i for i in ret_val]
         spring = []
@@ -57,7 +59,7 @@ def manage_items(user, passwd, item):
                 idee = -1
             items = item.split(',')
             for i, j in enumerate(items):
-                cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' % (user, idee+1+i, j))
+                cur.execute('''INSERT INTO %s_shoplist_table(id, name, modified, deleted) value (%s ,"%s", %s, %s)''' % (user, idee+1+i, j, time.time(), 0))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Added %s!" % item}])
@@ -66,7 +68,7 @@ def manage_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''DELETE from %s_shoplist_table where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set deleted = 1, modified = %s where name = "%s"''' % (user, time.time(),item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Deleted item(s)!"}])
@@ -81,7 +83,7 @@ def prioritize_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''UPDATE %s_shoplist_table set priority = "YES" where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set priority = "YES", modified = %s where name = "%s"''' % (user, time.time(), item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Set Priorities!"}])
@@ -96,12 +98,44 @@ def unprioritize_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''UPDATE %s_shoplist_table set priority = "NO" where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set priority = "NO", modified = %s where name = "%s"''' % (user, time.time(), item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Unset Priorities!"}])
     else:
         return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/shoplist/cleanup', methods=['DELETE'])
+def clear_old_items(user, passwd, item):
+        if verify_user(user, passwd):
+
+            if request.method == 'DELETE':
+                cur = mysql.connection.cursor()
+                items = item.split(',')
+                for i, item in enumerate(items):
+                    cur.execute('''delete from %s_shoplist_table where deleted = 1 and modified < %s "''' % (user, time.time()- (86500*days_before_cleanup)))
+                    mysql.connection.commit()
+                del cur
+                return json.dumps([{'result': "Cleaning up!"}])
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/shoplist/hashbrown')
+def get_hash(user, passwd):
+                if verify_user(user, passwd):
+                    cur = mysql.connection.cursor()
+                    cur.execute(
+                        '''SELECT sum(id), sum(modified) from %s_shoplist_table''' % user)
+                    ret_val = cur.fetchall()
+                    sting = [i for i in ret_val]
+                    spring = []
+                    for i in sting:
+                        thing = dict(zip(["s_id", "s_modified"], i))
+                        spring.append(thing)
+                    del cur
+                    return json.dumps(spring)
+                else:
+                    return json.dumps([{'name': "invalid credentials"}])
 
 
 # ############################EXPENSE PART#####################################
@@ -386,16 +420,16 @@ def reset_tables(name, passwd):
             cur.execute('''DROP TABLE IF EXISTS `%s`''' % (name+"_limit_table"))
             mysql.connection.commit()
 
-            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT)''' % (name + "_expense_table"))
+            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT, deleted TINYINT(1))''' % (name + "_expense_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10))''' % (name + "_shoplist_table"))
+            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10), modified INT, deleted TINYINT(1))''' % (name + "_shoplist_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT)''' % (name + "_limit_table"))
+            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT, modified INT)''' % (name + "_limit_table"))
             mysql.connection.commit()
 
-            cur.execute('''insert into %s(name, mon_lim) value ("DEFAULT", 1000)''' % (name + "_limit_table"))
+            cur.execute('''insert into %s(name, mon_lim, modified) value ("DEFAULT", 1000, %s)''' % (name + "_limit_table", time.time()))
             mysql.connection.commit()
             del cur
             return json.dumps([{'result': "REFRESHED"}])

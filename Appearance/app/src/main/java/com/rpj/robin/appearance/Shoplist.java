@@ -11,9 +11,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONArray;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,13 +24,15 @@ import java.util.ArrayList;
 
 public class Shoplist extends AppCompatActivity {
 
+    private ArrayList<Shoplist_item> my_shoplist;
+    private ArrayList<Shoplist_item> client_sync_list;
     private ArrayList<String> mylist;
     private ArrayList<String> selecteditems;
     private ArrayAdapter<String> adapter;
     private ListView listView;
     private EditText editText;
-    Sqealer sqealee;
-
+    Sqealer2 sqealee;
+    private Shoplist_item shoplist_item;
 
     private String myURL = myconf.global_url;
 
@@ -40,9 +45,12 @@ public class Shoplist extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listview);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
-        sqealee = new Sqealer(this, null, null, 1);
+        sqealee = new Sqealer2(this, null, null, 1);
         mylist = new ArrayList<>();
+        client_sync_list = new ArrayList<>();
+        my_shoplist = new ArrayList<>();
         editText = (EditText) findViewById(R.id.editText);
+        shoplist_item = new Shoplist_item(0,"","","","","");
 
         adapter = new ArrayAdapter<>(this, R.layout.list_items, R.id.checkedview, mylist);
         listView.setAdapter(adapter);
@@ -52,237 +60,100 @@ public class Shoplist extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String item = ((TextView) view).getText().toString();
 
-                if (selecteditems.contains(item)){
+                if (selecteditems.contains(item)) {
                     selecteditems.remove(item);
-                }
-                else {
+                } else {
                     selecteditems.add(item);
+                    //Toast.makeText(Shoplist.this, item, Toast.LENGTH_SHORT).show();
                 }
 
             }
         });
         repopulate(null);
+        sqealee.cleanup();
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if(!mylist.isEmpty()){
-            sqealee.truncater();
-            sqealee.addValues(mylist);
-        }
-
     }
 
-    public void repopulate(View view){
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String name = sharedpref.getString("username", "");
-        String passwd = sharedpref.getString("password", "");
+    public void repopulate(View view) {
 
-
-        String sURL = myURL + "/" + name+ ":" + passwd + "/shoplist/items";
         mylist.clear();
+        my_shoplist.clear();
+        client_sync_list.clear();
+        selecteditems.clear();
         adapter.notifyDataSetChanged();
         listView.clearChoices();
-        new Shop_GetUrlContentTask().execute(sURL, "SHOW");
-        adapter.notifyDataSetChanged();
-    }
 
+        ArrayList<Shoplist_item> valuemash = sqealee.getArray2();
 
-    public void onAdd(View view){
-        String thing = editText.getText().toString();
+        for (Shoplist_item value : valuemash) {
 
-        if (!thing.equals("")) {
-            SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-            String name = sharedpref.getString("username", "");
-            String passwd = sharedpref.getString("password", "");
+            client_sync_list.add(value);
+            if(!value.deleted.equals("1")){
+                value.name = value.name.replace("_", " ");
 
-            thing = thing.replace(" ", "_");
-            String sURL = myURL + "/" + name + ":" + passwd + "/shoplist/items/" + thing;
-            new Shop_GetUrlContentTask().execute(sURL, "ADD");
-            editText.setText("");
-            repopulate(null);
-            listView.clearChoices();
+            if (value.priority.equals("YES"))
+                mylist.add("*" + value.name);
+            else
+                mylist.add(value.name);
+            my_shoplist.add(value);
         }
+        }
+
+        adapter.notifyDataSetChanged();
+      String [] hashmash = sqealee.shoplisthashbrown().split(":");
+        Toast.makeText(this, hashmash[0] + "," + hashmash[1], Toast.LENGTH_SHORT).show();
     }
 
-    public void onRemove(View view){
 
-        if(mylist.size() == 0) return;
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String name = sharedpref.getString("username", "");
-        String passwd = sharedpref.getString("password", "");
-        String thing;
-        String sURL;
-        for (String item:selecteditems) {
-            if (item.startsWith("*"))
-                item = item.substring(1);
-            thing = item.replace(" ", "_");
-            sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
-            new Shop_GetUrlContentTask().execute(sURL, "DELETE");
+    public void onAdd(View view) {
+        String test = editText.getText().toString();
+        if(!test.equals("")){
+            String [] testarray = test.split(",");
+
+            for(String value:testarray){
+
+        shoplist_item.name = value.replace(" ", "_");
+        shoplist_item.priority = "NO";
+        shoplist_item.deleted = "0";
+        shoplist_item.modified = String.valueOf((System.currentTimeMillis() / 1000));
+        shoplist_item.serve_id = "";
+
+        sqealee.addValue(shoplist_item);}
+        editText.setText("");
+        repopulate(null);}
+    }
+
+    public void onRemove(View view) {
+        if (mylist.size() == 0) return;
+
+        for (String item : selecteditems) {
+            sqealee.deleteValues(my_shoplist.get(mylist.indexOf(item)));
         }
         repopulate(null);
-        listView.clearChoices();
-        selecteditems.clear();
-
+       // selecteditems.clear();
     }
 
-    public void onPriority(View view){
 
-        SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-        String name = sharedpref.getString("username", "");
-        String passwd = sharedpref.getString("password", "");
-        String thing;
-        String sURL;
+    public void onPriority(View view) {
 
-        for (String item:selecteditems){
+        for (String item : selecteditems) {
             if (item.startsWith("*")) {
-                mylist.remove(item);
-                mylist.add(item.substring(1));
-                thing = item.replace(" ", "_");
-                sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/unprioritize/" + thing.substring(1);
-                new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
+                sqealee.unprioritize(my_shoplist.get(mylist.indexOf(item)));
+                //Toast.makeText(this, item + " UNPRIOR", Toast.LENGTH_SHORT).show();
+            } else {
+                sqealee.prioritize(my_shoplist.get(mylist.indexOf(item)));
+                //Toast.makeText(this, item + " PRIOR", Toast.LENGTH_SHORT).show();
+
             }
-            else {
-                mylist.remove(item);
-                mylist.add("*" + item);
-                thing = item.replace(" ", "_");
-                sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/prioritize/" + thing;
-                new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
-            }}
+        }
         listView.clearChoices();
         selecteditems.clear();
         repopulate(null);
 
     }
-/*
-    public void onCost(View view) {
-        ;
-    }
-*/
-
-    private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
-        protected String doInBackground(String... params) {
-
-            switch (params[1]) {
-
-                case ("ADD") :
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("POST");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
-                    }
-                    return content;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            break;
-            case ("DELETE"):
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("DELETE");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
-                    }
-                    return content;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            break;
-            case ("PRIORITY"):
-
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("PUT");
-                    connection.setDoOutput(true);
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
-                    }
-                    return content;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            break;
-            case ("SHOW"):
-                try {
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.setConnectTimeout(5000);
-                    connection.setReadTimeout(5000);
-                    connection.connect();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String content = "", line;
-                    while ((line = rd.readLine()) != null) {
-                        content += line + "\n";
-                        publishProgress(line);
-                    }
-                    return content;
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            return null;
-        }
-
-        protected void onProgressUpdate(String... progress) {
-            /*progress[0] = progress[0].replace("_", " ");
-            mylist.add(progress[0]);
-            adapter.notifyDataSetChanged();
-        */}
-
-        protected void onPostExecute(String result) {
-            if (result == null)
-                return;
-            String item;
-            try {
-                JSONArray jsonArray = new JSONArray(result);
-                for (int i =0; i< jsonArray.length(); i++) {
-                    if (jsonArray.getJSONObject(i).getString("priority").equals("YES")) {
-                        item = "*" + jsonArray.getJSONObject(i).getString("name");
-                        item = item.replace("_", " ");
-                        mylist.add(item);
-                    } else {
-                        item = jsonArray.getJSONObject(i).getString("name");
-                        item = item.replace("_", " ");
-                        mylist.add(item);
-
-                    }
-                }
-                adapter.notifyDataSetChanged();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-        }
-    }
-
 }

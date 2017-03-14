@@ -33,6 +33,7 @@ class Sqealer extends SQLiteOpenHelper {
 
         db.execSQL(query);
 
+
     }
 
     @Override
@@ -46,9 +47,7 @@ class Sqealer extends SQLiteOpenHelper {
      void truncater(){
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(db);
-        db.close();
-     }
+        onCreate(db);    }
 
 
      void addValues (ArrayList<String> items){
@@ -59,6 +58,7 @@ class Sqealer extends SQLiteOpenHelper {
         for (String item:items)
         {values.put(COLUMN_ITEM, item);
         db.insert(TABLE_NAME, null, values);}
+
         db.close();
     }
 
@@ -66,7 +66,6 @@ class Sqealer extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         for (String item:items)
         db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE " + COLUMN_ITEM + "= \"" + item + "\" ;" );
-        db.close();
     }
 
     public String getValues(){
@@ -80,7 +79,7 @@ class Sqealer extends SQLiteOpenHelper {
         int columnnumber = c.getColumnIndex("name");
 
         do {
-            if (c.getString(columnnumber) != null) {
+            if (c.getString(c.getColumnIndex("name")) != null) {
 
                 dbString += c.getString(columnnumber);
                 dbString += "\n";
@@ -104,7 +103,7 @@ class Sqealer extends SQLiteOpenHelper {
         int columnnumber = c.getColumnIndex("name");
 
         do {
-            if (c.getString(columnnumber) != null) {
+            if (c.getString(c.getColumnIndex("name")) != null) {
 
                 myArray.add(c.getString(columnnumber));
             }

@@ -3,7 +3,6 @@ package com.rpj.robin.appearance;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -318,16 +317,16 @@ public class Expense extends AppCompatActivity {
     public void onRemove(View view){
         if(TOTAL_FLAG.equals("FALSE")) {
             if (mylist.size() == 0) return;
-            String thing;
-            String sURL;
+
             SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
             String shared_name = sharedpref.getString("username", "");
             String passwd = sharedpref.getString("password", "");
 
             for (Expense_item item : selecteditems) {
-                thing = item.name;
+                String thing = item.name;
                 thing = thing.replace(" ", "_");
-                sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
+                String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + thing + "/" + item.date + "/" + item.cost.replace(" SEK", "");
+
                 new Expense_GetUrlContentTask().execute(sURL, "DELETE");
             }
             listView.clearChoices();
@@ -713,7 +712,7 @@ public class Expense extends AppCompatActivity {
                         heading.setText(heading_text);
 
                         for (int i = 0; i < jsonArray.length(); i++) {
-                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category")));
+                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),""));
                         }
 
                     } catch (Exception e) {
@@ -733,7 +732,7 @@ public class Expense extends AppCompatActivity {
                     JSONArray jsonArray = new JSONArray(result);
 
                     for (int i = 0; i < jsonArray.length(); i++) {
-                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),""));
+                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),"",""));
                     }
 
                     adapter.notifyDataSetChanged();
