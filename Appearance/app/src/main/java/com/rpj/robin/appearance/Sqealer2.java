@@ -5,9 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
-
-import java.util.Date;
 import java.util.ArrayList;
 
 
@@ -77,11 +74,11 @@ class Sqealer2 extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE "+ deleted_col + " = 1 and " + modified_col + "< \"" + ((System.currentTimeMillis() / 1000) - (86500 *no_of_days_before_cleanup)) + "\" ;" );
     }
 
-    public void deleteValues(Shoplist_item item){
+     void deleteValues(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
             db.execSQL("UPDATE " + TABLE_NAME + " set " + deleted_col + " = 1, " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }
-
+/*
     public String getValues(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
@@ -104,7 +101,7 @@ class Sqealer2 extends SQLiteOpenHelper {
         c.close();
         return dbString;
     }
-/*
+
      ArrayList<String> getArray(){
         ArrayList <String> myArray = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
@@ -201,6 +198,11 @@ class Sqealer2 extends SQLiteOpenHelper {
          db.execSQL("UPDATE " + TABLE_NAME + " set " + priority_col + " = 'NO' , " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) + " WHERE " + COLUMN_ID  + "= \"" + item.client_id + "\" ;" );
     }
 
+
+
+//////////////////////////// SYNC FUNCTIONS //////////////////////////
+
+
      String shoplisthashbrown(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
@@ -225,7 +227,7 @@ class Sqealer2 extends SQLiteOpenHelper {
         return dbString;
     }
 
-//////////////////////////// SYNC FUNCTIONS //////////////////////////
+
 
 public void update_Values(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
