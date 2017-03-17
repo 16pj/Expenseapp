@@ -20,7 +20,7 @@ app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
 
 mysql = MySQL(app)
-days_before_cleanup = 3
+days_before_cleanup = 0
 
 
 @app.route('/')
@@ -34,12 +34,12 @@ def index():
 def get_items(user, passwd):
     if verify_user(user, passwd):
         cur = mysql.connection.cursor()
-        cur.execute('''SELECT name, priority from %s_shoplist_table desc where deleted != 1 order by priority ''' % user)
+        cur.execute('''SELECT id, name, priority, modified, deleted from %s_shoplist_table order by priority desc ''' % user)
         ret_val = cur.fetchall()
         sting = [i for i in ret_val]
         spring = []
         for i in sting:
-            thing = dict(zip(["name", "priority"], i))
+            thing = dict(zip(["id", "name", "priority", "modified", "deleted"], i))
             spring.append(thing)
         del cur
         return json.dumps(spring)
@@ -106,15 +106,13 @@ def unprioritize_items(user, passwd, item):
         return json.dumps([{'name': "invalid credentials"}])
 
 @app.route('/<string:user>:<string:passwd>/shoplist/cleanup', methods=['DELETE'])
-def clear_old_items(user, passwd, item):
+def clear_old_items(user, passwd):
         if verify_user(user, passwd):
 
             if request.method == 'DELETE':
                 cur = mysql.connection.cursor()
-                items = item.split(',')
-                for i, item in enumerate(items):
-                    cur.execute('''delete from %s_shoplist_table where deleted = 1 and modified < %s "''' % (user, time.time()- (86500*days_before_cleanup)))
-                    mysql.connection.commit()
+                cur.execute('''delete from %s_shoplist_table where deleted = 1 and modified < "%s" ''' % (user, time.time()- (86500*days_before_cleanup)))
+                mysql.connection.commit()
                 del cur
                 return json.dumps([{'result': "Cleaning up!"}])
             else:
@@ -129,13 +127,65 @@ def get_hash(user, passwd):
                     ret_val = cur.fetchall()
                     sting = [i for i in ret_val]
                     spring = []
-                    for i in sting:
-                        thing = dict(zip(["s_id", "s_modified"], i))
-                        spring.append(thing)
+                    for j, k in sting:
+                        if j is None:
+                            j = "0"
+                        if k is None:
+                            k = "0"
+                        spring.append({"s_id": str(j), "s_modified": str(k)})
                     del cur
                     return json.dumps(spring)
                 else:
                     return json.dumps([{'name': "invalid credentials"}])
+#########################################SHOPLIST SYNC
+
+@app.route('/<string:user>:<string:passwd>/shoplist/get_items')
+def get_sync_items(user, passwd):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+        cur.execute('''SELECT id, name, priority, modified, deleted, client_id from %s_shoplist_table order by priority desc ''' % user)
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "priority", "modified", "deleted", "client_id"], i))
+            spring.append(thing)
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+
+
+@app.route('/<string:user>:<string:passwd>/shoplist/sync_item/<string:idee>/<string:item>/<string:priority>/<string:modified>/<string:deleted>/<string:client_id>', methods=['PUT'])
+def sync_items(idee, user, passwd, item, priority, modified, deleted, client_id):
+    if verify_user(user, passwd):
+        if request.method == 'PUT':
+            cur = mysql.connection.cursor()
+            items = item.split(',')
+            for i, item in enumerate(items):
+                cur.execute('''UPDATE %s_shoplist_table set name = "%s", priority = "%s", modified = "%s", deleted = "%s", client_id="%s" where id = "%s"''' % (user, item, priority, modified, deleted, client_id, idee))
+                mysql.connection.commit()
+            del cur
+            return json.dumps([{'result': "sync edit!"}])
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/shoplist/add_item/<string:item>/<string:priority>/<string:modified>/<string:deleted>/<string:client_id>',methods=['POST'])
+def add_items(user, passwd, item, priority, modified, deleted, client_id):
+        if verify_user(user, passwd):
+            if request.method == 'POST':
+                cur = mysql.connection.cursor()
+                items = item.split(',')
+                for i, item in enumerate(items):
+                    cur.execute(
+                        '''INSERT INTO %s_shoplist_table(name, priority, modified, deleted, client_id) value ("%s", "%s", "%s", "%s", "%s")''' % (user, item, priority, modified, deleted, client_id))
+                    mysql.connection.commit()
+                del cur
+                return json.dumps([{'result': "sync add!"}])
+        else:
+            return json.dumps([{'name': "invalid credentials"}])
 
 
 # ############################EXPENSE PART#####################################

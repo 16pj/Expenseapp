@@ -22,8 +22,8 @@ class Sqealer2 extends SQLiteOpenHelper {
     private static final String deleted_col = "deleted";
     private static final String priority_col = "priority";
     private static final String servid_col = "server_id";
-    private Shoplist_item shoplist_item = new Shoplist_item(-1,"","","","","");
-    private int no_of_days_before_cleanup = 3;
+    private Shoplist_item shoplist_item = new Shoplist_item("","","","","","");
+    private int no_of_days_before_cleanup = 0;
 
 
      Sqealer2(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -178,7 +178,7 @@ class Sqealer2 extends SQLiteOpenHelper {
         try {
             do {
                 if (c.getString(c.getColumnIndex(name_col)) != null) {
-                    myArray.add(new Shoplist_item(c.getInt(c.getColumnIndex(COLUMN_ID)), c.getString(c.getColumnIndex(name_col)), c.getString(c.getColumnIndex(priority_col)), c.getString(c.getColumnIndex(deleted_col)), c.getString(c.getColumnIndex(modified_col)), c.getString(c.getColumnIndex(servid_col)) ));
+                    myArray.add(new Shoplist_item(c.getString(c.getColumnIndex(COLUMN_ID)), c.getString(c.getColumnIndex(name_col)), c.getString(c.getColumnIndex(priority_col)), c.getString(c.getColumnIndex(deleted_col)), c.getString(c.getColumnIndex(modified_col)), c.getString(c.getColumnIndex(servid_col)) ));
                 }
             } while (c.moveToNext());
 
@@ -219,10 +219,18 @@ class Sqealer2 extends SQLiteOpenHelper {
 
         db.close();
         c.close();
+        if (dbString.equals("") || dbString.isEmpty()){
+             dbString = "0:0";
+         }
         return dbString;
     }
 
+//////////////////////////// SYNC FUNCTIONS //////////////////////////
 
+public void update_Values(Shoplist_item item){
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("UPDATE " + TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
+    }
 
 }
 

@@ -1,7 +1,7 @@
 package com.rpj.robin.appearance;
 
 class Shoplist_item {
-     int client_id;
+     String client_id;
      String name;
      String priority;
      String modified;
@@ -9,7 +9,7 @@ class Shoplist_item {
      String serve_id;
 
 
-    Shoplist_item(int client_id, String name, String priority, String deleted, String modified, String serve_id) {
+    Shoplist_item(String client_id, String name, String priority, String deleted, String modified, String serve_id) {
         this.client_id = client_id;
         this.name = name;
         this.priority = priority;
