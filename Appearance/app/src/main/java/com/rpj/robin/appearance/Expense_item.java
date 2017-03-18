@@ -7,11 +7,11 @@ class Expense_item {
      String category;
     String modified;
     String deleted;
-     public String client_id;
-     public String serve_id;
-    public String tag;
+      String client_id;
+      String serve_id;
+     String tag;
 
-    Expense_item( String client_id, String name, String cost, String date, String category, String modified, String deleted, String tag, String serve_id) {
+    Expense_item( String client_id, String name, String cost, String date, String category, String deleted, String modified, String tag, String serve_id) {
         this.name = name;
         this.cost = cost;
         this.date = date;

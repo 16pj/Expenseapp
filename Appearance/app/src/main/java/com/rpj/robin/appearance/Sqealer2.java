@@ -13,7 +13,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
 
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "Spree.db";
+    private static final String DATABASE_NAME = "Spree_shoplist.db";
     //private static final String myconf.SHOPLIST_TABLE_NAME = "shoplist_table";
     private static final String COLUMN_ID = "_id";
     private static final String name_col = "name";
@@ -167,6 +167,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 */
 
     ArrayList<Shoplist_item> getArray2(){
+
         ArrayList <Shoplist_item> myArray = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM " + myconf.SHOPLIST_TABLE_NAME + " order by " + priority_col +" DESC";

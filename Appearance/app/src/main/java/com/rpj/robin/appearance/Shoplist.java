@@ -32,7 +32,7 @@ public class Shoplist extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private ListView listView;
     private EditText editText;
-    Sqealer2 sqealee;
+    Sqealer2 sqealee2;
     private Shoplist_item shoplist_item;
     private String [] hashbrown = new String[2];
     private String login_name;
@@ -59,7 +59,7 @@ public class Shoplist extends AppCompatActivity {
         login_name = sharedpref.getString("username", "");
         login_pass = sharedpref.getString("password", "");
         myconf.SHOPLIST_TABLE_NAME = login_name  + "_shoplist_table";
-        sqealee = new Sqealer2(this, null, null, 1);
+        sqealee2 = new Sqealer2(this, null, null, 1);
 
         cclean();
         adapter = new ArrayAdapter<>(this, R.layout.list_items, R.id.checkedview, mylist);
@@ -98,7 +98,7 @@ public void repopulate(View view) {
         listView.clearChoices();
 
     try {
-        ArrayList<Shoplist_item> valuemash = sqealee.getArray2();
+        ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
         if(!valuemash.isEmpty()) {
             for (Shoplist_item value : valuemash) {
 
@@ -139,7 +139,7 @@ public void onAdd(View view) {
         shoplist_item.modified = String.valueOf((System.currentTimeMillis() / 1000));
         shoplist_item.serve_id = "";
 
-        sqealee.addValue(shoplist_item);}
+        sqealee2.addValue(shoplist_item);}
         editText.setText("");
         repopulate(null);}
     }
@@ -148,7 +148,7 @@ public void onRemove(View view) {
         if (mylist.size() == 0) return;
 
         for (String item : selecteditems) {
-            sqealee.deleteValues(my_shoplist.get(mylist.indexOf(item)));
+            sqealee2.deleteValues(my_shoplist.get(mylist.indexOf(item)));
         }
         repopulate(null);
        // selecteditems.clear();
@@ -159,10 +159,10 @@ public void onPriority(View view) {
 
         for (String item : selecteditems) {
             if (item.startsWith("*")) {
-                sqealee.unprioritize(my_shoplist.get(mylist.indexOf(item)));
+                sqealee2.unprioritize(my_shoplist.get(mylist.indexOf(item)));
                 //Toast.makeText(this, item + " UNPRIOR", Toast.LENGTH_SHORT).show();
             } else {
-                sqealee.prioritize(my_shoplist.get(mylist.indexOf(item)));
+                sqealee2.prioritize(my_shoplist.get(mylist.indexOf(item)));
                 //Toast.makeText(this, item + " PRIOR", Toast.LENGTH_SHORT).show();
             }
         }
@@ -230,7 +230,7 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
 
                     //CHECK HASH
                     server_sync_list.clear();
-                    String[] hashmash = sqealee.shoplisthashbrown().split(":");
+                    String[] hashmash = sqealee2.shoplisthashbrown().split(":");
 
                     boolean x = hashmash[0].equals(hashbrown[0]);
                     boolean y = hashmash[1].equals(hashbrown[1]);
@@ -250,7 +250,7 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
                     client_sync_list.clear();
                     server_sync_list.clear();
 
-                    ArrayList<Shoplist_item> valuemash = sqealee.getArray2();
+                    ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
 
                     if(!valuemash.isEmpty()) {
                         for (Shoplist_item value : valuemash) {
@@ -525,20 +525,20 @@ public void update_server_item(Shoplist_item item, String type){
     }
 
 public void update_client_item(Shoplist_item item, String type){
-        sqealee.update_Values(item);
+        sqealee2.update_Values(item);
         if(type.equals("ADD")) {
-            sqealee.addValue(item);
+            sqealee2.addValue(item);
 
         }
         else if(type.equals("EDIT")){
-            sqealee.update_Values(item);
+            sqealee2.update_Values(item);
         }
 
     }
 
 
 public void cclean(){
-        sqealee.cleanup();
+        sqealee2.cleanup();
             String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/cleanup";
             new Shop_GetUrlContentTask().execute(sURL, "CLEANUP", "NO_RETURN");
     }
