@@ -115,7 +115,7 @@ public class Expense extends AppCompatActivity {
                 int mon_pos = Integer.parseInt(selected_expense.date.substring(2))-1;
                 int cat_pos = c.indexOf(selected_expense.category);
 
-                onEdit(selected_expense.id, selected_expense.name, selected_expense.cost.substring(0, selected_expense.cost.length()-4), mon_pos, cat_pos);
+                onEdit(selected_expense.client_id, selected_expense.name, selected_expense.cost.substring(0, selected_expense.cost.length()-4), mon_pos, cat_pos);
 
                 return true;
             }
@@ -712,7 +712,7 @@ public class Expense extends AppCompatActivity {
                         heading.setText(heading_text);
 
                         for (int i = 0; i < jsonArray.length(); i++) {
-                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),""));
+                            mylist.add(new Expense_item(jsonArray.getJSONObject(i).getString("client_id"), jsonArray.getJSONObject(i).getString("name").replace("_", " "), jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"), jsonArray.getJSONObject(i).getString("modified"), jsonArray.getJSONObject(i).getString("deleted"),  jsonArray.getJSONObject(i).getString("tag"),""));
                         }
 
                     } catch (Exception e) {
@@ -732,7 +732,7 @@ public class Expense extends AppCompatActivity {
                     JSONArray jsonArray = new JSONArray(result);
 
                     for (int i = 0; i < jsonArray.length(); i++) {
-                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),"",""));
+                        mylist.add(new Expense_item("", "", jsonArray.getJSONObject(i).getString("cost") + " SEK", jsonArray.getJSONObject(i).getString("date"),"","", "", "", ""));
                     }
 
                     adapter.notifyDataSetChanged();
