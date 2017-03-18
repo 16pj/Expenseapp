@@ -48,7 +48,6 @@ public class Shoplist extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listview);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
-        sqealee = new Sqealer2(this, null, null, 1);
         mylist = new ArrayList<>();
         client_sync_list = new ArrayList<>();
         my_shoplist = new ArrayList<>();
@@ -59,6 +58,8 @@ public class Shoplist extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         login_name = sharedpref.getString("username", "");
         login_pass = sharedpref.getString("password", "");
+        myconf.SHOPLIST_TABLE_NAME = login_name  + "_shoplist_table";
+        sqealee = new Sqealer2(this, null, null, 1);
 
         cclean();
         adapter = new ArrayAdapter<>(this, R.layout.list_items, R.id.checkedview, mylist);
@@ -81,7 +82,6 @@ public class Shoplist extends AppCompatActivity {
 
         repopulate(null);
     }
-
 
     @Override
 protected void onDestroy() {
@@ -444,7 +444,7 @@ public void compare_presence(ArrayList<Shoplist_item> client, ArrayList<Shoplist
             if (item.serve_id.equals("")) {
           //      client_stuff.add(item.name);
                 update_server_item(item, "ADD");
-                Toast.makeText(this, "Server gets " + item.client_id + "," + item.name + ", " + item.priority + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Server gets " + item.client_id + "," + item.name + ", " + item.priority + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -453,7 +453,7 @@ public void compare_presence(ArrayList<Shoplist_item> client, ArrayList<Shoplist
             if(item.client_id.equals("-1")){
             //    server_stuff.add(item.name);
                 update_client_item(item, "ADD");
-                Toast.makeText(this, "Client gets " + item.client_id + "," + item.name + ", " + item.priority + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Client gets " + item.client_id + "," + item.name + ", " + item.priority + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
             }
         }
         second_stage();
@@ -471,20 +471,20 @@ public void second_stage() {
 
 public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_item> server){
 
-        Toast.makeText(this, "Fourth Stage", Toast.LENGTH_SHORT).show();
+       // Toast.makeText(this, "second stage", Toast.LENGTH_SHORT).show();
         for (int i =0; i <client.size(); i++){
             for(int j =0; j < server.size(); j++){
                 if(client.get(i).name.equals(server.get(j).name)) {
                    // Toast.makeText(this, "name equal", Toast.LENGTH_SHORT).show();
 
                     if(client.get(i).serve_id.equals("")) {
-                        Toast.makeText(this, "client serve_id blank", Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(this, "client serve_id blank", Toast.LENGTH_SHORT).show();
                         Shoplist_item temp = client.get(i);
                         temp.serve_id = server.get(j).serve_id;
                         update_client_item(temp,"EDIT");
                     }
                     else if (server.get(j).client_id.equals("-1")){
-                        Toast.makeText(this, "server client_id blank", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(this, "server client_id blank", Toast.LENGTH_SHORT).show();
                         Shoplist_item temp = server.get(j);
                         temp.client_id = client.get(i).client_id;
                         update_server_item(temp, "EDIT");
@@ -494,14 +494,14 @@ public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_
                         Shoplist_item temp = client.get(i);
                         temp.serve_id = server.get(j).serve_id;
                         update_server_item(temp, "EDIT");
-                        Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                     }
 
                     else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
                         Shoplist_item temp = server.get(j);
                         temp.client_id = client.get(i).client_id;
                         update_client_item(temp, "EDIT");
-                        Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -539,7 +539,6 @@ public void update_client_item(Shoplist_item item, String type){
 
 public void cclean(){
         sqealee.cleanup();
-
             String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/cleanup";
             new Shop_GetUrlContentTask().execute(sURL, "CLEANUP", "NO_RETURN");
     }

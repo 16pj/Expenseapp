@@ -36,6 +36,7 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         editname = (EditText) findViewById(R.id.editId);
         editpass = (EditText) findViewById(R.id.editPass);
+
     }
 
     public void onReg(View view) {
@@ -97,7 +98,6 @@ public class Login extends AppCompatActivity {
             String sURL = myURL + "/RESET/" + uname + ":" + upass;
             new GetUrlContentTask().execute(sURL, "RESET");
         }
-
     }
 
     public void saveInfo(String userName, String userPass){
@@ -251,6 +251,7 @@ public class Login extends AppCompatActivity {
                     Toast.makeText(Login.this, "SUCCESSFULLY LOGGED IN", Toast.LENGTH_SHORT).show();
                     saveInfo(editname.getText().toString(), get_md5_from_string(editpass.getText().toString()));
                     Intent i = new Intent(Login.this, MainActivity.class);
+                    myconf.SHOPLIST_TABLE_NAME =  editname.getText().toString() + "_shoplist_table";
                     startActivity(i);
                 } else if (result.trim().equals("WRONG")) {
                     Toast.makeText(Login.this, "WRONG ID/PASS", Toast.LENGTH_SHORT).show();

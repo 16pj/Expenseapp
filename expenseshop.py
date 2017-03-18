@@ -22,7 +22,6 @@ app.config['MYSQL_DB'] = 'testdb'
 mysql = MySQL(app)
 days_before_cleanup = 0
 
-
 @app.route('/')
 def index():
     return json.dumps([{'result': "WELCOME TO THE APP. USE THE API."}])
