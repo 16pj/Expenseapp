@@ -690,13 +690,13 @@ def reset_tables(name, passwd):
             cur.execute('''DROP TABLE IF EXISTS `%s`''' % (name+"_limit_table"))
             mysql.connection.commit()
 
-            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT, deleted TINYINT(1), client_id INT, tag INT)''' % (name + "_expense_table"))
+            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT, deleted TINYINT(1), client_id INT, tag VARCHAR(50))''' % (name + "_expense_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10), modified INT, deleted TINYINT(1), client_id INT,  tag INT)''' % (name + "_shoplist_table"))
+            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10), modified INT, deleted TINYINT(1), client_id INT,  tag VARCHAR(50))''' % (name + "_shoplist_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT, modified INT,  tag INT)''' % (name + "_limit_table"))
+            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT, modified INT,  tag VARCHAR(50))''' % (name + "_limit_table"))
             mysql.connection.commit()
 
             cur.execute('''insert into %s(name, mon_lim, modified) value ("DEFAULT", 1000, %s)''' % (name + "_limit_table", time.time()))
