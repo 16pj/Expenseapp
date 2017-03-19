@@ -38,7 +38,8 @@ public class Expense extends AppCompatActivity {
     private ArrayList<Expense_item> mylist;
     private ArrayList<Expense_item> selecteditems;
     private ArrayList<Expense_item> my_expenselist;
-
+    private ArrayList<Expense_item> client_sync_list;
+    private ArrayList<Expense_item> server_sync_list;
     private int batch;
     private TextView limit;
 
@@ -56,6 +57,7 @@ public class Expense extends AppCompatActivity {
     private String login_name;
     private String login_pass;
     Sqealer sqealee;
+    private String [] hashbrown = new String[2];
 
 
     private String myURL = myconf.global_url;
@@ -73,8 +75,11 @@ public class Expense extends AppCompatActivity {
         mylist = new ArrayList<>();
         limit = (TextView) findViewById(R.id.limit);
         batch = 1;
+        client_sync_list = new ArrayList<>();
+        server_sync_list = new ArrayList<>();
         heading = (TextView) findViewById(R.id.heading);
         sqealee = new Sqealer(this, null, null, 1);
+
         Button Adder;
         Adder = (Button) findViewById(R.id.ADD);
 
@@ -90,7 +95,7 @@ public class Expense extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         login_name = sharedpref.getString("username", "");
         login_pass = sharedpref.getString("password", "");
-
+        cclean();
         editName = (EditText) findViewById(R.id.name);
         editNum = (EditText) findViewById(R.id.num);
 
@@ -230,12 +235,8 @@ public class Expense extends AppCompatActivity {
                 });
 
                     builder.create().show();
+                }
 
-                }
-                else {
-                    CATEGOY_FLAG = "FALSE";
-                    repopulate(null);
-                }
                 return true;
 
             default:
@@ -249,6 +250,7 @@ public class Expense extends AppCompatActivity {
         mylist.clear();
         my_expenselist.clear();
         selecteditems.clear();
+        client_sync_list.clear();
         adapter.notifyDataSetChanged();
         listView.clearChoices();
         try {
@@ -259,6 +261,7 @@ public class Expense extends AppCompatActivity {
         batch=1;
         TOTAL_FLAG="FALSE";
         CATEGOY_FLAG = "FALSE";
+        check_hash(0);
     }
 
     public void overpopulate(View view){
@@ -523,13 +526,6 @@ public class Expense extends AppCompatActivity {
 
 
                     nam = nam.replace(" ", "_");
-                    SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
-                    String shared_name = sharedpref.getString("username", "");
-                    String passwd = sharedpref.getString("password", "");
-
-                    String sURL = myURL + "/" + shared_name +":" + passwd+ "/expense/items/" + idee + ":" + nam + ":" + Selected_month + ":" + cos + ":" + Selected_category;
-
-
 
                     sqealee.update_Values(new Expense_item(idee, nam,cos,date_from_monthstring(Selected_month), Selected_category, "0", String.valueOf(System.currentTimeMillis() / 1000L), "", ""));
 
@@ -613,9 +609,10 @@ public class Expense extends AppCompatActivity {
             ArrayList<Expense_item> myarray = sqealee.get_batch_array(batch);
 
             if (!myarray.isEmpty()) {
-                //Toast.makeText(this, "value found", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this, "value found", Toast.LENGTH_SHORT).show();
                 for (Expense_item value : myarray) {
                     my_expenselist.add(value);
+                    client_sync_list.add(value);
                     if (!value.deleted.equals("1")) {
                         value.name = value.name.replace("_", " ");
                         mylist.add(value);
@@ -659,5 +656,401 @@ public class Expense extends AppCompatActivity {
 
         return (yearstamp + month);
 
+    }
+    
+    
+    
+    
+    //////////////////////////////////SYNC
+
+
+
+
+    public void check_hash(int batch) {
+
+        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown/" + String.valueOf(batch);
+        String message = "CHECK_HASH" + ":" +  String.valueOf(batch);
+        new Expense_Get_hash_ContentTask().execute(sURL,"HASH", message);
+    }
+
+
+    private class Expense_Get_hash_ContentTask extends AsyncTask<String, String, String> {
+        private String whenceforth = "";
+        private String batch = "0";
+        protected String doInBackground(String... params) {
+
+            whenceforth = params[2].split(":")[0];
+            try {
+                batch = params[2].split(":")[1];
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            switch (params[1]) {
+
+                case ("HASH") :
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("GET");
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    break;
+
+            }
+
+            return null;
+        }
+
+        protected void onProgressUpdate(String... progress) {}
+
+        protected void onPostExecute(String  result) {
+
+            try {
+                JSONArray jsonArray = new JSONArray(result);
+                for (int i =0; i< jsonArray.length(); i++) {
+                    hashbrown[0] = jsonArray.getJSONObject(i).getString("s_id");
+                    hashbrown[1] = jsonArray.getJSONObject(i).getString("s_modified");
+                }
+                Toast.makeText(Expense.this, "Server hash is " + hashbrown[0] + ", " + hashbrown[1] + " for batch: " + batch, Toast.LENGTH_SHORT).show();
+
+                if(whenceforth.equals("CHECK_HASH")) {
+
+                    //CHECK HASH
+                    server_sync_list.clear();
+                    String[] hashmash = sqealee.expenselisthashbrown(Integer.parseInt(batch)).split(":");
+
+                    boolean x = hashmash[0].equals(hashbrown[0]);
+                    boolean y = hashmash[1].equals(hashbrown[1]);
+
+                    Toast.makeText(Expense.this, String.format("local hash is  %s , %s for batch: %s", hashmash[0],hashmash[1], batch), Toast.LENGTH_SHORT).show();
+
+                    if (!x || !y) {
+
+                        Toast.makeText(Expense.this, "Sync required", Toast.LENGTH_SHORT).show();
+                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
+                        String message = "CHECK_HASH" + ":" +  batch;
+                        new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
+                    }
+
+                    //END CHECK HASH
+                }
+                else if(whenceforth.equals("SECOND_STAGE")) {
+
+                    client_sync_list.clear();
+                    server_sync_list.clear();
+
+                    ArrayList<Expense_item> valuemash = sqealee.getArray2();
+
+                    if(!valuemash.isEmpty()) {
+                        for (Expense_item value : valuemash) {
+
+                            client_sync_list.add(value);
+                        }
+                    }
+                        String message = "SECOND_STAGE" + ":" +  batch;
+                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
+                        new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
+
+
+                }
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+
+    private class Expense_GetUrlContentTask extends AsyncTask<String, String, String> {
+        private String whenceforth = "";
+        private String batch = "0";
+        protected String doInBackground(String... params) {
+
+            whenceforth = params[2].split(":")[0];
+            try {
+                batch = params[2].split(":")[1];
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            switch (params[1]) {
+
+                case ("ADD"):
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("POST");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case ("CLEANUP"):
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("DELETE");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case ("UPDATE"):
+
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("PUT");
+                        connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case ("SHOW"):
+                    try {
+                        URL url = new URL(params[0]);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setRequestMethod("GET");
+                        //connection.setDoOutput(true);
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        connection.connect();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String content = "", line;
+                        while ((line = rd.readLine()) != null) {
+                            content += line + "\n";
+                            publishProgress(line);
+                        }
+                        return content;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+            }
+
+            return null;
+        }
+
+        protected void onProgressUpdate(String... progress) {
+        }
+
+        protected void onPostExecute(String result) {
+
+            if(whenceforth.equals("CHECK_HASH")) {
+                try {
+                    String clid = "";
+                    JSONArray jsonArray = new JSONArray(result);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            clid = jsonArray.getJSONObject(i).getString("client_id");
+                            // Toast.makeText(Shoplist.this, "Client id is " + clid, Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (clid.isEmpty() || clid.equals("") || clid.equals("null"))
+                            clid = "-1";
+                        //Toast.makeText(Expense.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
+                        if(!jsonArray.getJSONObject(i).getString("name").equals("Server Empty"))
+                        server_sync_list.add(new Expense_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost"), jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),jsonArray.getJSONObject(i).getString("deleted"),jsonArray.getJSONObject(i).getString("modified"),jsonArray.getJSONObject(i).getString("tag"), jsonArray.getJSONObject(i).getString("id")));
+                    }
+
+                   //Toast.makeText(Expense.this, client_sync_list.get(0).name, Toast.LENGTH_SHORT).show();
+                    if (client_sync_list.isEmpty() && server_sync_list.isEmpty())
+                        Toast.makeText(Expense.this, "Clientlist and serverlist are empty", Toast.LENGTH_SHORT).show();
+
+
+                    else
+                        compare_presence(client_sync_list, server_sync_list, Integer.parseInt(batch));
+                    //Toast.makeText(Expense.this, "Compare presence", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            else if(whenceforth.equals("SECOND_STAGE")) {
+
+                try {
+                    String clid = "";
+                    JSONArray jsonArray = new JSONArray(result);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            clid = jsonArray.getJSONObject(i).getString("client_id");
+                            // Toast.makeText(Shoplist.this, "Client id is " + clid, Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (clid.isEmpty() || clid.equals("") || clid.equals("null"))
+                            clid = "-1";
+                        //Toast.makeText(Shoplist.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
+                        server_sync_list.add(new Expense_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost"), jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),jsonArray.getJSONObject(i).getString("deleted"),jsonArray.getJSONObject(i).getString("modified"),jsonArray.getJSONObject(i).getString("tag"), jsonArray.getJSONObject(i).getString("id")));
+                    }
+
+                    if (!client_sync_list.isEmpty() && !server_sync_list.isEmpty())
+                        compare_updates(client_sync_list, server_sync_list);
+                    else
+                        Toast.makeText(Expense.this, "Clientlist or serverlist is empty", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+    public void compare_presence(ArrayList<Expense_item> client, ArrayList<Expense_item> server, int batch){
+
+        ArrayList<String> client_stuff = new ArrayList<>();
+        ArrayList<String> server_stuff = new ArrayList<>();
+
+        if(!client.isEmpty()){
+        for (Expense_item item:client) {
+
+            if (item.serve_id.equals("")) {
+                    client_stuff.add(item.name);
+                update_server_item(item, "ADD");
+                Toast.makeText(this, "Server gets " + item.client_id + "," + item.name + ", " + item.cost + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
+            }
+        }}
+        if(!server.isEmpty()){
+        for (Expense_item item:server){
+
+            if(item.client_id.equals("-1")){
+                    server_stuff.add(item.name);
+                update_client_item(item, "ADD");
+                Toast.makeText(this, "Client gets " + item.serve_id + "," + item.name + ", " + item.cost + ", " + item.deleted + ", " + item.modified + ", " + item.serve_id, Toast.LENGTH_SHORT).show();
+            }
+        }}
+
+        second_stage(batch);
+
+        String x = String.valueOf(client_stuff.size()) + " , " +  String.valueOf(server_stuff.size());
+        //Toast.makeText(this,x , Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void second_stage(int batch) {
+        Toast.makeText(this, "Second Stage", Toast.LENGTH_SHORT).show();
+        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown/" + String.valueOf(batch);
+        String message = "SECOND_STAGE" + ":" +  String.valueOf(batch);
+        new Expense_Get_hash_ContentTask().execute(sURL, "HASH", message);
+    }
+
+    public void compare_updates(ArrayList<Expense_item> client, ArrayList<Expense_item> server){
+
+        Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
+        for (int i =0; i <client.size(); i++){
+            for(int j =0; j < server.size(); j++){
+                if(client.get(i).name.equals(server.get(j).name) && client.get(i).tag.equals(server.get(j).tag)) {
+                     Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
+
+                    if(client.get(i).serve_id.equals("")) {
+                        Toast.makeText(this, "client serve_id blank", Toast.LENGTH_SHORT).show();
+                        Expense_item temp = client.get(i);
+                        temp.serve_id = server.get(j).serve_id;
+                        update_client_item(temp,"EDIT");
+                    }
+                    else if (server.get(j).client_id.equals("-1")){
+                        Toast.makeText(this, "server client_id blank", Toast.LENGTH_SHORT).show();
+                        Expense_item temp = server.get(j);
+                        temp.client_id = client.get(i).client_id;
+                        update_server_item(temp, "EDIT");
+                    }
+
+                    else if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
+                        Expense_item temp = client.get(i);
+                        temp.serve_id = server.get(j).serve_id;
+                        update_server_item(temp, "EDIT");
+                        Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                    }
+
+                    else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
+                        Expense_item temp = server.get(j);
+                        temp.client_id = client.get(i).client_id;
+                        update_client_item(temp, "EDIT");
+                        Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    public void update_server_item(Expense_item item, String type){
+
+
+        if(type.equals("ADD")) {
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/add_item/" + item.name + "/" + item.cost + "/" + item.category  +"/" + item.date + "/" + item.deleted + "/" + item.modified  + "/"+ item.tag + "/" + item.client_id;
+            new Expense_GetUrlContentTask().execute(sURL, "ADD", "NO_RETURN");
+        }
+        else if(type.equals("EDIT")){
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/sync_item/" + item.serve_id + "/" + item.name + "/" + item.cost + "/" + item.category  + "/" + item.date + "/" + item.deleted + "/" + item.modified + "/" + item.client_id;
+            new Expense_GetUrlContentTask().execute(sURL, "UPDATE", "NO_RETURN");
+        }
+    }
+
+    public void update_client_item(Expense_item item, String type){
+        sqealee.update_Values(item);
+        if(type.equals("ADD")) {
+            sqealee.addValue(item);
+
+        }
+        else if(type.equals("EDIT")){
+            sqealee.sync_Values(item);
+        }
+    }
+
+
+    public void cclean(){
+        sqealee.cleanup();
+        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/cleanup";
+        new Expense_GetUrlContentTask().execute(sURL, "CLEANUP", "NO_RETURN:");
     }
 }

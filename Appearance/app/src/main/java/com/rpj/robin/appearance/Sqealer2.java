@@ -22,7 +22,7 @@ class Sqealer2 extends SQLiteOpenHelper {
     private static final String priority_col = "priority";
     private static final String servid_col = "server_id";
     private Shoplist_item shoplist_item = new Shoplist_item("","","","","","");
-    private int no_of_days_before_cleanup = 0;
+    private int no_of_days_before_cleanup = 30;
 
 
      Sqealer2(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {

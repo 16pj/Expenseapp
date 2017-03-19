@@ -28,7 +28,7 @@ class Sqealer extends SQLiteOpenHelper {
     private static final String tag = "tag";
     private static final String servid_col = "server_id";
     private Expense_item expense_item = new Expense_item("","","","","","","","","");
-    private int no_of_days_before_cleanup = 0;
+    private int no_of_days_before_cleanup = 30;
 
 
      Sqealer(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -398,10 +398,43 @@ class Sqealer extends SQLiteOpenHelper {
 //////////////////////////// SYNC FUNCTIONS //////////////////////////
 
 
-    String expenselisthashbrown(){
+    String expenselisthashbrown1(){
         String dbString= "";
         SQLiteDatabase db = getReadableDatabase();
         String query = "SELECT sum("+ servid_col + "),sum(" + modified_col+") FROM " + TABLE_NAME;
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        int columnnumber = c.getColumnIndex("sum(" +servid_col +")");
+
+        do {
+            if (c.getString(columnnumber) != null) {
+
+                dbString = c.getString(c.getColumnIndex("sum(" +servid_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+            }
+        }while (c.moveToNext());
+
+        db.close();
+        c.close();
+        if (dbString.equals("") || dbString.isEmpty()){
+            dbString = "0:0";
+        }
+        db.close();
+        c.close();
+        return dbString;
+    }
+
+
+    String expenselisthashbrown(int batch){
+        String dbString= "";
+        String month_string = new SimpleDateFormat("yyMM", Locale.GERMANY).format(new Date());
+        int month = Integer.parseInt(month_string);
+        int batch_start = batch*3;
+        String start = get_sub_date(month, batch_start+3);
+        String end = get_sub_date(month, batch_start);
+
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT sum("+ servid_col + "),sum(" + modified_col+") FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
@@ -433,7 +466,7 @@ class Sqealer extends SQLiteOpenHelper {
 
     public void sync_Values(Expense_item item){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("UPDATE " + TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + cost_column + " = " + item.cost + category_column + " = " + item.category +deleted_col + " = " + item.deleted + " , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id + " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
+        db.execSQL("UPDATE " + TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + cost_column + " = " + item.cost + " , " +  date_column + " = " + item.date  + ", "+ category_column + " = " + "\"" + item.category + "\"" + " , " + modified_col + " = " + item.modified + " , " + deleted_col + " = " + item.deleted + " , " + servid_col + " = " + item.serve_id + " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }
 
 }
