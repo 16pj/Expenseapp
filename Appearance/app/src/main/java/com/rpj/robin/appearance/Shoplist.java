@@ -114,12 +114,13 @@ public class Shoplist extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
         String passwd = sharedpref.getString("password", "");
-
+        String thing;
+        String sURL;
         for (String item:selecteditems) {
             if (item.startsWith("*"))
                 item = item.substring(1);
-            String thing = item.replace(" ", "_");
-            String sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
+            thing = item.replace(" ", "_");
+            sURL = myURL + "/" + name+ ":" + passwd+  "/shoplist/items/" + thing;
             new Shop_GetUrlContentTask().execute(sURL, "DELETE");
         }
         repopulate(null);
@@ -133,21 +134,22 @@ public class Shoplist extends AppCompatActivity {
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         String name = sharedpref.getString("username", "");
         String passwd = sharedpref.getString("password", "");
-
+        String thing;
+        String sURL;
 
         for (String item:selecteditems){
             if (item.startsWith("*")) {
                 mylist.remove(item);
                 mylist.add(item.substring(1));
-                String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/unprioritize/" + thing.substring(1);
+                thing = item.replace(" ", "_");
+                sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/unprioritize/" + thing.substring(1);
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }
             else {
                 mylist.remove(item);
                 mylist.add("*" + item);
-                String thing = item.replace(" ", "_");
-                String sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/prioritize/" + thing;
+                thing = item.replace(" ", "_");
+                sURL = myURL + "/" + name + ":" + passwd+  "/shoplist/prioritize/" + thing;
                 new Shop_GetUrlContentTask().execute(sURL, "PRIORITY");
             }}
         listView.clearChoices();
