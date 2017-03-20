@@ -434,16 +434,16 @@ class Sqealer extends SQLiteOpenHelper {
         String end = get_sub_date(month, batch_start);
 
         SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT sum("+ servid_col + "),sum(" + modified_col+") FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
+        String query = "SELECT sum("+ tag + "),sum(" + modified_col+") FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        int columnnumber = c.getColumnIndex("sum(" +servid_col +")");
+        int columnnumber = c.getColumnIndex("sum(" +tag +")");
 
         do {
             if (c.getString(columnnumber) != null) {
 
-                dbString = c.getString(c.getColumnIndex("sum(" +servid_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+                dbString = c.getString(c.getColumnIndex("sum(" +tag +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
             }
         }while (c.moveToNext());
 

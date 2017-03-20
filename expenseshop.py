@@ -444,7 +444,7 @@ def get_total_hash_expense(user, passwd):
             if verify_user(user, passwd):
                 cur = mysql.connection.cursor()
                 cur.execute(
-                    '''SELECT sum(id), sum(modified) from %s_expense_table''' % user)
+                    '''SELECT sum(tag), sum(modified) from %s_expense_table''' % user)
                 ret_val = cur.fetchall()
                 sting = [i for i in ret_val]
                 spring = []
@@ -480,7 +480,7 @@ def get_hash_expense(user, passwd, batch):
                         j = "0"
                     if k is None:
                         k = "0"
-                    spring.append({"s_id": str(j), "s_modified": str(k)})
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
                 del cur
                 return json.dumps(spring)
             else:
