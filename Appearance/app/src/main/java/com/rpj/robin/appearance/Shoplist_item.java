@@ -19,7 +19,6 @@ class Shoplist_item {
         this.tag = tag;
         this.serve_id =serve_id;
 
-
     }
 
 }

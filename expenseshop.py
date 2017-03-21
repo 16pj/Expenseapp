@@ -184,7 +184,7 @@ def get_hash(user, passwd):
                         j = "0"
                     if k is None:
                         k = "0"
-                    spring.append({"s_id": str(j), "s_modified": str(k)})
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
                 del cur
                 return json.dumps(spring)
             else:
@@ -453,7 +453,7 @@ def get_total_hash_expense(user, passwd):
                         j = "0"
                     if k is None:
                         k = "0"
-                    spring.append({"s_id": str(j), "s_modified": str(k)})
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
                 del cur
                 return json.dumps(spring)
             else:
