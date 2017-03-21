@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,7 +39,7 @@ public class Expense extends AppCompatActivity {
 
     private ArrayList<Expense_item> mylist;
     private ArrayList<Expense_item> selecteditems;
-    private ArrayList<Expense_item> my_expenselist;
+   // private ArrayList<Expense_item> my_expenselist;
     private ArrayList<Expense_item> client_sync_list;
     private ArrayList<Expense_item> server_sync_list;
     private int batch;
@@ -56,6 +58,8 @@ public class Expense extends AppCompatActivity {
     private String Selected_category_total = "DEFAULT";
     private String login_name;
     private String login_pass;
+    private int selected_1 = 0;
+    private int selected_2 = 0;
     Sqealer sqealee;
     private String [] hashbrown = new String[2];
 
@@ -71,7 +75,7 @@ public class Expense extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         selecteditems = new ArrayList<>();
-        my_expenselist = new ArrayList<>();
+      //  my_expenselist = new ArrayList<>();
         mylist = new ArrayList<>();
         limit = (TextView) findViewById(R.id.limit);
         batch = 1;
@@ -248,7 +252,7 @@ public class Expense extends AppCompatActivity {
     public void repopulate(View view){
 
         mylist.clear();
-        my_expenselist.clear();
+       // my_expenselist.clear();
         selecteditems.clear();
         client_sync_list.clear();
         adapter.notifyDataSetChanged();
@@ -272,6 +276,7 @@ public class Expense extends AppCompatActivity {
                get_items(batch);
             else
                get_categories(Selected_category_total,batch);
+            check_hash(batch);
             batch += 1;
             listView.clearChoices();
         }
@@ -369,13 +374,30 @@ public class Expense extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, c);
 
         final EditText name = new EditText(Expense.this);
+        RelativeLayout.LayoutParams rm = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        name.setLayoutParams(rm);
+        name.setId(View.generateViewId());
         final EditText cost = new EditText(Expense.this);
+        RelativeLayout.LayoutParams rn = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        rn.addRule(RelativeLayout.RIGHT_OF, name.getId() );
+
+        rn.addRule(RelativeLayout.ALIGN_END);
+
+        cost.setLayoutParams(rn);
+        cost.setId(View.generateViewId());
         name.setHint("NAME");
         cost.setHint("COST");
         name.setInputType(InputType.TYPE_CLASS_TEXT);
         cost.setInputType(InputType.TYPE_CLASS_NUMBER);
+        RelativeLayout.LayoutParams ro = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        ro.addRule(RelativeLayout.BELOW, cost.getId());
+
 
         final Spinner sp_m = new Spinner(Expense.this);
+        sp_m.setLayoutParams(ro);
         sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         sp_m.setAdapter(adp_m);
         int pos;
@@ -396,10 +418,36 @@ public class Expense extends AppCompatActivity {
 
             }
         });
+        sp_m.setId(View.generateViewId());
+
 
         final Spinner sp_c = new Spinner(Expense.this);
-        sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        //  sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+
+
+        RelativeLayout.LayoutParams rp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        rp.addRule(RelativeLayout.RIGHT_OF, sp_m.getId());
+        rp.addRule(RelativeLayout.BELOW, cost.getId());
+
+        sp_c.setLayoutParams(rp);
         sp_c.setAdapter(adp_c);
+        sp_c.setId(View.generateViewId());
+
+
+        RelativeLayout.LayoutParams rq = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        rq.addRule(RelativeLayout.BELOW, sp_c.getId());
+
+
+        TextView split_text = new TextView(Expense.this);
+        split_text.setText(String.valueOf(" SPLIT? "));
+        split_text.setTextSize(16);
+
+        split_text.setLayoutParams(rq);
+        split_text.setId(View.generateViewId());
 
         sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
@@ -413,16 +461,89 @@ public class Expense extends AppCompatActivity {
             }
         });
 
+        final Integer [] x = {0,1,2,3,4,5,6,7,8,9,10,11,12};
+        final Integer [] neg_x = {0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12};
+
+        final ArrayAdapter<Integer> adp_minus = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, neg_x);
+        final ArrayAdapter<Integer> adp_plus = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, x);
+
+        Spinner np = new Spinner(Expense.this);
+
+
+        RelativeLayout.LayoutParams rr = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        rr.addRule(RelativeLayout.BELOW, sp_c.getId());
+        rr.addRule(RelativeLayout.RIGHT_OF, split_text.getId());
+
+        np.setLayoutParams(rr);
+        np.setAdapter(adp_minus);
+        np.setId(View.generateViewId());
+
+        Spinner np2 = new Spinner(Expense.this);
+
+        RelativeLayout.LayoutParams rs = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        rs.addRule(RelativeLayout.BELOW, sp_c.getId());
+        rs.addRule(RelativeLayout.RIGHT_OF, np.getId());
+
+
+
+
+        TextView colon_text = new TextView(Expense.this);
+        colon_text.setText(String.valueOf(" : "));
+        colon_text.setTextSize(16);
+
+        colon_text.setLayoutParams(rs);
+        colon_text.setId(View.generateViewId());
+
+
+        RelativeLayout.LayoutParams rt = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        rt.addRule(RelativeLayout.BELOW, sp_c.getId());
+        rt.addRule(RelativeLayout.RIGHT_OF, colon_text.getId());
+
+
+        np2.setAdapter(adp_plus);
+
+        np2.setLayoutParams(rt);
+        np2.setId(View.generateViewId());
+        np.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selected_1 = neg_x[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
+        np2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selected_2 = x[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
 
-        LinearLayout ll=new LinearLayout(this);
-        ll.setOrientation(LinearLayout.VERTICAL);
+        RelativeLayout ll=new RelativeLayout(this);
+
         ll.addView(name);
         ll.addView(cost);
         ll.addView(sp_m);
         ll.addView(sp_c);
-
+        ll.addView(split_text);
+        ll.addView(np);
+        ll.addView(colon_text);
+        ll.addView(np2);
 
         builder.setView(ll);
         builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
@@ -433,7 +554,31 @@ public class Expense extends AppCompatActivity {
 
                 nam = nam.replace(" ", "_");
 
-                sqealee.addValue(new Expense_item("",nam,  cos, date_from_monthstring(Selected_month), Selected_category, "0", String.valueOf(System.currentTimeMillis() / 1000L), String.valueOf(System.currentTimeMillis() / 1000L), ""));
+                if(selected_1 == 0 && selected_2 == 0) {
+
+                    sqealee.addValue(new Expense_item("", nam, cos, date_from_monthstring(Selected_month), Selected_category, "0", String.valueOf(System.currentTimeMillis() / 1000L), String.valueOf(System.currentTimeMillis() / 1000L), ""));
+                }
+
+                else {
+                    if (cos.equals("")) cos = "0";
+
+                    try {
+                        int[] months = split_it(selected_1, selected_2, Integer.parseInt(cos));
+                        {
+                            String tag = String.valueOf(System.currentTimeMillis() / 100000000L);
+                            for (int i : months) {
+                                if (i != months[0]) {
+                                    //String sURL = nam + ":" + i + ":" + months[0] + ":" + Selected_category;
+                                    sqealee.addValue(new Expense_item("", nam, String.valueOf(months[0]), String.valueOf(i), Selected_category, "0", String.valueOf(System.currentTimeMillis() / 1000L), tag + i, ""));
+                                    //Toast.makeText(Expense.this, sURL, Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(Expense.this, "Couldn't split correctly", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
 
                 repopulate(null);
             }
@@ -468,15 +613,41 @@ public class Expense extends AppCompatActivity {
                     android.R.layout.simple_spinner_item, c);
 
             final EditText name = new EditText(Expense.this);
+            RelativeLayout.LayoutParams rm = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            name.setLayoutParams(rm);
+            name.setId(View.generateViewId());
+
+
             final EditText cost = new EditText(Expense.this);
+
+
+            RelativeLayout.LayoutParams rn = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            rn.addRule(RelativeLayout.RIGHT_OF, name.getId() );
+
+            rn.addRule(RelativeLayout.ALIGN_END);
+
+            cost.setLayoutParams(rn);
+            cost.setId(View.generateViewId());
+
+
             name.setText(edit_name);
             cost.setText(edit_cost);
             name.setInputType(InputType.TYPE_CLASS_TEXT);
             cost.setInputType(InputType.TYPE_CLASS_NUMBER);
 
             final Spinner sp_m = new Spinner(Expense.this);
-            sp_m.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            RelativeLayout.LayoutParams ro = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            ro.addRule(RelativeLayout.BELOW, cost.getId());
+            sp_m.setLayoutParams(ro);
+
+
             sp_m.setAdapter(adp_m);
+
+            sp_m.setId(View.generateViewId());
 
             sp_m.setSelection(edit_month);
             sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -492,7 +663,19 @@ public class Expense extends AppCompatActivity {
             });
 
             final Spinner sp_c = new Spinner(Expense.this);
-            sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            RelativeLayout.LayoutParams rp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            rp.addRule(RelativeLayout.RIGHT_OF, sp_m.getId());
+            rp.addRule(RelativeLayout.BELOW, cost.getId());
+
+            sp_c.setLayoutParams(rp);
+            sp_c.setId(View.generateViewId());
+
+
+
+
             sp_c.setAdapter(adp_c);
             sp_c.setSelection(edit_category);
             sp_c.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -510,8 +693,9 @@ public class Expense extends AppCompatActivity {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
 
-            LinearLayout ll = new LinearLayout(this);
-            ll.setOrientation(LinearLayout.VERTICAL);
+            RelativeLayout ll=new RelativeLayout(this);
+
+
             ll.addView(name);
             ll.addView(cost);
             ll.addView(sp_m);
@@ -552,7 +736,7 @@ public class Expense extends AppCompatActivity {
             if (!myarray.isEmpty()) {
                 //Toast.makeText(this, "value found", Toast.LENGTH_SHORT).show();
                 for (Expense_item value : myarray) {
-                    my_expenselist.add(value);
+                   // my_expenselist.add(value);
                         value.name = value.name.replace("_", " ");
                         mylist.add(value);
                 }
@@ -578,7 +762,7 @@ public class Expense extends AppCompatActivity {
             if (!myarray.isEmpty()) {
                 //Toast.makeText(this, "value found", Toast.LENGTH_SHORT).show();
                 for (Expense_item value : myarray) {
-                    my_expenselist.add(value);
+                    //my_expenselist.add(value);
                     value.name = value.name.replace("_", " ");
                     mylist.add(value);
                 }
@@ -611,7 +795,7 @@ public class Expense extends AppCompatActivity {
             if (!myarray.isEmpty()) {
                // Toast.makeText(this, "value found", Toast.LENGTH_SHORT).show();
                 for (Expense_item value : myarray) {
-                    my_expenselist.add(value);
+                    //my_expenselist.add(value);
                     client_sync_list.add(value);
                     if (!value.deleted.equals("1")) {
                         value.name = value.name.replace("_", " ");
@@ -740,15 +924,30 @@ public class Expense extends AppCompatActivity {
 
                     if (!x || !y) {
 
-                        Toast.makeText(Expense.this, "Sync required", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Expense.this, "sync required", Toast.LENGTH_SHORT).show();
+                        client_sync_list.clear();
+                        server_sync_list.clear();
+
+                        ArrayList<Expense_item> valuemash = sqealee.get_batch_array(Integer.parseInt(batch));
+
+                        if(!valuemash.isEmpty()) {
+                            for (Expense_item value : valuemash) {
+
+                                Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
+                                client_sync_list.add(value);
+                            }
+                        }
+                        String message = "SECOND_STAGE" + ":" +  batch;
                         String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
-                        String message = "CHECK_HASH" + ":" +  batch;
                         new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
+
+
+
                     }
 
                     //END CHECK HASH
                 }
-                else if(whenceforth.equals("SECOND_STAGE")) {
+              /*  else if(whenceforth.equals("SECOND_STAGE")) {
 
                     client_sync_list.clear();
                     server_sync_list.clear();
@@ -767,7 +966,7 @@ public class Expense extends AppCompatActivity {
 
 
                 }
-
+*/
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -880,7 +1079,7 @@ public class Expense extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
 
-            if(whenceforth.equals("CHECK_HASH")) {
+            /*if(whenceforth.equals("CHECK_HASH")) {
                 try {
                     String clid = "";
                     JSONArray jsonArray = new JSONArray(result);
@@ -913,7 +1112,7 @@ public class Expense extends AppCompatActivity {
             }
 
 
-            else if(whenceforth.equals("SECOND_STAGE")) {
+            else */ if(whenceforth.equals("SECOND_STAGE")) {
 
                 try {
                     String clid = "";
@@ -927,11 +1126,13 @@ public class Expense extends AppCompatActivity {
                         }
                         if (clid.isEmpty() || clid.equals("") || clid.equals("null"))
                             clid = "-1";
-                        //Toast.makeText(Shoplist.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Expense.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
+
+
                         server_sync_list.add(new Expense_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost"), jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),jsonArray.getJSONObject(i).getString("deleted"),jsonArray.getJSONObject(i).getString("modified"),jsonArray.getJSONObject(i).getString("tag"), jsonArray.getJSONObject(i).getString("id")));
                     }
 
-                    if (!client_sync_list.isEmpty() && !server_sync_list.isEmpty())
+                    if (!client_sync_list.isEmpty() || !server_sync_list.isEmpty())
                         compare_updates(client_sync_list, server_sync_list);
                     else
                         Toast.makeText(Expense.this, "Clientlist or serverlist is empty", Toast.LENGTH_SHORT).show();
@@ -985,53 +1186,89 @@ public class Expense extends AppCompatActivity {
     public void compare_updates(ArrayList<Expense_item> client, ArrayList<Expense_item> server){
 
         Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
+        String [] client_array = new String[client.size()];
+        String [] server_array = new String[server.size()];
+
+        for (int i =0; i <client.size(); i++) {
+            client_array[i] = "";
+        }
+
+        for (int i =0; i <server.size(); i++) {
+            server_array[i] = "";
+        }
+
+
         for (int i =0; i <client.size(); i++){
             for(int j =0; j < server.size(); j++){
-                if(client.get(i).name.equals(server.get(j).name) && client.get(i).tag.equals(server.get(j).tag)) {
-                     Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
+                if(client.get(i).tag.equals(server.get(j).tag)) {
+                    Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
 
-                    if(client.get(i).serve_id.equals("")) {
-                        Toast.makeText(this, "client serve_id blank", Toast.LENGTH_SHORT).show();
-                        Expense_item temp = client.get(i);
-                        temp.serve_id = server.get(j).serve_id;
-                        update_client_item(temp,"EDIT");
+                    if(!client.get(i).tag.equals("null")) {
+                        if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
+                            Expense_item temp = client.get(i);
+                            temp.serve_id = server.get(j).serve_id;
+                            update_server_item(temp, "EDIT");
+                            client_array[i] = "UPDATE";
+                            server_array[j] = "UPDATE";
+                            Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                        } else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
+                            Expense_item temp = server.get(j);
+                            temp.client_id = client.get(i).client_id;
+                            update_client_item(temp, "EDIT");
+                            client_array[i] = "UPDATE";
+                            server_array[j] = "UPDATE";
+                            Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                        } else {
+                            client_array[i] = "EXISTS";
+                            server_array[j] = "EXISTS";
+                        }
                     }
-                    else if (server.get(j).client_id.equals("-1")){
-                        Toast.makeText(this, "server client_id blank", Toast.LENGTH_SHORT).show();
-                        Expense_item temp = server.get(j);
-                        temp.client_id = client.get(i).client_id;
-                        update_server_item(temp, "EDIT");
-                    }
-
-                    else if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
-                        Expense_item temp = client.get(i);
-                        temp.serve_id = server.get(j).serve_id;
-                        update_server_item(temp, "EDIT");
-                        Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
-                    }
-
-                    else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
-                        Expense_item temp = server.get(j);
-                        temp.client_id = client.get(i).client_id;
-                        update_client_item(temp, "EDIT");
-                        Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
-                    }
+                    else {
+                        if(client.get(i).serve_id.equals(server.get(j).serve_id)){
+                        if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
+                            Expense_item temp = client.get(i);
+                            temp.serve_id = server.get(j).serve_id;
+                            update_server_item(temp, "EDIT");
+                            client_array[i] = "UPDATE";
+                            server_array[j] = "UPDATE";
+                            Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                        } else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
+                            Expense_item temp = server.get(j);
+                            temp.client_id = client.get(i).client_id;
+                            update_client_item(temp, "EDIT");
+                            client_array[i] = "UPDATE";
+                            server_array[j] = "UPDATE";
+                            Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                        } else {
+                            client_array[i] = "EXISTS";
+                            server_array[j] = "EXISTS";
+                        }
+                    }}
                 }
+            }
+
+            if (client_array[i].equals("") || client_array[i].isEmpty()){
+                update_server_item(client.get(i), "ADD");
             }
         }
 
-    }
+        for (int i = 0 ; i < server.size(); i++){
+            if (server_array[i].equals("") || server_array[i].isEmpty()){
+                update_client_item(server.get(i), "ADD");
+            }
+        }
 
+
+    }
 
     public void update_server_item(Expense_item item, String type){
 
-
         if(type.equals("ADD")) {
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/add_item/" + item.name + "/" + item.cost + "/" + item.category  +"/" + item.date + "/" + item.deleted + "/" + item.modified  + "/"+ item.tag + "/" + item.client_id;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/add_item/" + item.name.replace(" ", "_") + "/" + item.cost + "/" + item.category  +"/" + item.date + "/" + item.deleted + "/" + item.modified  + "/"+ item.tag + "/" + item.client_id;
             new Expense_GetUrlContentTask().execute(sURL, "ADD", "NO_RETURN");
         }
         else if(type.equals("EDIT")){
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/sync_item/" + item.serve_id + "/" + item.name + "/" + item.cost + "/" + item.category  + "/" + item.date + "/" + item.deleted + "/" + item.modified + "/" + item.client_id;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/sync_item/" + item.serve_id + "/" + item.name.replace(" ", "_") + "/" + item.cost + "/" + item.category  + "/" + item.date + "/" + item.deleted + "/" + item.modified + "/" + item.client_id;
             new Expense_GetUrlContentTask().execute(sURL, "UPDATE", "NO_RETURN");
         }
     }
@@ -1053,4 +1290,35 @@ public class Expense extends AppCompatActivity {
         String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/cleanup";
         new Expense_GetUrlContentTask().execute(sURL, "CLEANUP", "NO_RETURN:");
     }
+
+    public int [] split_it(int a, int b, int sum) {
+
+        int[] split_month = new int[-a + b + 1 + 1];
+        int split_value = sum / (-a + b + 1);
+        split_month[0] = split_value;
+        String month_string = new SimpleDateFormat("yyMM", Locale.GERMANY).format(new Date());
+        int month = Integer.parseInt(month_string);
+        int j = 1;
+        for (int i = a; i < (b + 1); i++) {
+            split_month[j] = Integer.parseInt(get_sub_date(month, -i));
+            j++;
+        }
+
+        return split_month;
+
+    }
+
+    private String  get_sub_date(int date, int num){
+
+        int yy = date / 100 - num / 12;
+        int mm = date % 100 - num % 12;
+        while (mm <= 0){
+            mm += 12;
+            yy -= 1;}
+        return (String.valueOf(yy * 100 + mm));
+    }
+
+
+
+
 }

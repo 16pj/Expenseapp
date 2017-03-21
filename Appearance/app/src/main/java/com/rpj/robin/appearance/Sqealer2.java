@@ -20,8 +20,9 @@ class Sqealer2 extends SQLiteOpenHelper {
     private static final String modified_col = "modified";
     private static final String deleted_col = "deleted";
     private static final String priority_col = "priority";
+    private static final String tag_col = "tag";
     private static final String servid_col = "server_id";
-    private Shoplist_item shoplist_item = new Shoplist_item("","","","","","");
+    private Shoplist_item shoplist_item = new Shoplist_item("","","","","","","");
     private int no_of_days_before_cleanup = 30;
 
 
@@ -35,7 +36,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
         String query = "CREATE TABLE " + myconf.SHOPLIST_TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT " + "," +
-                name_col + " TEXT " + ","+ priority_col + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ servid_col + " INT " +
+                name_col + " TEXT " + ","+ priority_col + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag_col + " INT " + ","+ servid_col + " INT " +
                 ");";
 
         db.execSQL(query);
@@ -64,6 +65,7 @@ class Sqealer2 extends SQLiteOpenHelper {
          values.put(priority_col, item.priority);
          values.put(deleted_col, item.deleted);
          values.put(modified_col, item.modified);
+         values.put(tag_col, item.tag);
          values.put(servid_col, item.serve_id);
 
          db.insert(myconf.SHOPLIST_TABLE_NAME, null, values);
@@ -178,7 +180,7 @@ class Sqealer2 extends SQLiteOpenHelper {
         try {
             do {
                 if (c.getString(c.getColumnIndex(name_col)) != null) {
-                    myArray.add(new Shoplist_item(c.getString(c.getColumnIndex(COLUMN_ID)), c.getString(c.getColumnIndex(name_col)), c.getString(c.getColumnIndex(priority_col)), c.getString(c.getColumnIndex(deleted_col)), c.getString(c.getColumnIndex(modified_col)), c.getString(c.getColumnIndex(servid_col)) ));
+                    myArray.add(new Shoplist_item(c.getString(c.getColumnIndex(COLUMN_ID)), c.getString(c.getColumnIndex(name_col)), c.getString(c.getColumnIndex(priority_col)), c.getString(c.getColumnIndex(deleted_col)), c.getString(c.getColumnIndex(modified_col)),c.getString(c.getColumnIndex(tag_col)) , c.getString(c.getColumnIndex(servid_col)) ));
                 }
             } while (c.moveToNext());
 
@@ -209,16 +211,16 @@ class Sqealer2 extends SQLiteOpenHelper {
      String shoplisthashbrown(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT sum("+ servid_col + "),sum(" + modified_col+") FROM " + myconf.SHOPLIST_TABLE_NAME;
+        String query = "SELECT sum("+ tag_col + "),sum(" + modified_col+") FROM " + myconf.SHOPLIST_TABLE_NAME;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        int columnnumber = c.getColumnIndex("sum(" +servid_col +")");
+        int columnnumber = c.getColumnIndex("sum(" +tag_col +")");
 
         do {
             if (c.getString(columnnumber) != null) {
 
-                dbString = c.getString(c.getColumnIndex("sum(" +servid_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+                dbString = c.getString(c.getColumnIndex("sum(" +tag_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
             }
         }while (c.moveToNext());
 
@@ -234,7 +236,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
 public void update_Values(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
+        db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + priority_col + " =  \"" + item.priority+ "\" , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }
 
 }

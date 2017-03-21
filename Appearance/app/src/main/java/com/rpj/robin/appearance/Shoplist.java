@@ -53,7 +53,7 @@ public class Shoplist extends AppCompatActivity {
         my_shoplist = new ArrayList<>();
         server_sync_list = new ArrayList<>();
         editText = (EditText) findViewById(R.id.editText);
-        shoplist_item = new Shoplist_item("","","","","","");
+        shoplist_item = new Shoplist_item("","","","","","","");
 
         SharedPreferences sharedpref = getSharedPreferences("userInfo", Context.MODE_PRIVATE);
         login_name = sharedpref.getString("username", "");
@@ -121,7 +121,7 @@ public void repopulate(View view) {
     }
 
             check_hash();
-            //check_hash();
+           // second_stage();
        // Toast.makeText(this, hashmash[0] + "," + hashmash[1], Toast.LENGTH_SHORT).show();
     }
 
@@ -137,6 +137,7 @@ public void onAdd(View view) {
         shoplist_item.priority = "NO";
         shoplist_item.deleted = "0";
         shoplist_item.modified = String.valueOf((System.currentTimeMillis() / 1000));
+        shoplist_item.tag = String.valueOf((System.currentTimeMillis() / 1000));
         shoplist_item.serve_id = "";
 
         sqealee2.addValue(shoplist_item);}
@@ -224,28 +225,40 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
                     hashbrown[0] = jsonArray.getJSONObject(i).getString("s_id");
                     hashbrown[1] = jsonArray.getJSONObject(i).getString("s_modified");
                 }
-                //Toast.makeText(Shoplist.this, "My hash is " + hashbrown[0] + ", " + hashbrown[1], Toast.LENGTH_SHORT).show();
+                Toast.makeText(Shoplist.this, "Server hash is " + hashbrown[0] + ", " + hashbrown[1], Toast.LENGTH_SHORT).show();
 
                 if(whenceforth.equals("CHECK_HASH")) {
 
                     //CHECK HASH
-                    server_sync_list.clear();
                     String[] hashmash = sqealee2.shoplisthashbrown().split(":");
 
                     boolean x = hashmash[0].equals(hashbrown[0]);
                     boolean y = hashmash[1].equals(hashbrown[1]);
 
-                    //Toast.makeText(this, String.format("my localhash is  %s , %s", hashmash[0],hashmash[1]), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Shoplist.this, String.format("my localhash is  %s , %s", hashmash[0],hashmash[1]), Toast.LENGTH_SHORT).show();
 
                     if (!x || !y) {
 
-                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
-                        new Shop_GetUrlContentTask().execute(sURL, "SHOW", "CHECK_HASH");
+                        client_sync_list.clear();
+                        server_sync_list.clear();
+
+                        ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
+
+                        if(!valuemash.isEmpty()) {
+                            for (Shoplist_item value : valuemash) {
+
+                                client_sync_list.add(value);
+                            }
+
+                            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
+                            new Shop_GetUrlContentTask().execute(sURL, "SHOW", "SECOND_STAGE");
+
+                        }
                     }
 
                 //END CHECK HASH
                 }
-                else if(whenceforth.equals("SECOND_STAGE")) {
+               /* else if(whenceforth.equals("SECOND_STAGE")) {
 
                     client_sync_list.clear();
                     server_sync_list.clear();
@@ -264,7 +277,7 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
                     }
 
                 }
-
+*/
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -371,7 +384,7 @@ private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
 
         protected void onPostExecute(String result) {
 
-            if(whenceforth.equals("CHECK_HASH")) {
+            /*if(whenceforth.equals("CHECK_HASH")) {
                 try {
                     String clid = "";
                     JSONArray jsonArray = new JSONArray(result);
@@ -399,7 +412,7 @@ private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
             }
 
 
-            else if(whenceforth.equals("SECOND_STAGE")) {
+            else */if(whenceforth.equals("SECOND_STAGE")) {
 
                 try {
                     String clid = "";
@@ -414,7 +427,8 @@ private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
                         if (clid.isEmpty() || clid.equals("") || clid.equals("null"))
                             clid = "-1";
                         //Toast.makeText(Shoplist.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
-                        server_sync_list.add(new Shoplist_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("priority"), jsonArray.getJSONObject(i).getString("deleted"), jsonArray.getJSONObject(i).getString("modified"), jsonArray.getJSONObject(i).getString("id")));
+                        if (!jsonArray.getJSONObject(i).getString("tag").isEmpty())
+                            server_sync_list.add(new Shoplist_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("priority"), jsonArray.getJSONObject(i).getString("deleted"), jsonArray.getJSONObject(i).getString("modified"), jsonArray.getJSONObject(i).getString("tag") ,jsonArray.getJSONObject(i).getString("id")));
                     }
 
                     if (!client_sync_list.isEmpty() || !server_sync_list.isEmpty())
@@ -427,13 +441,9 @@ private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
                 }
 
             }
-            else if(whenceforth.equals("SECOND_STAGE")) {
-                //PURPOSEFULLY EMPTY
-                ;
-            }
         }
     }
-
+/*
 public void compare_presence(ArrayList<Shoplist_item> client, ArrayList<Shoplist_item> server){
 
         ArrayList<String> client_stuff = new ArrayList<>();
@@ -468,45 +478,62 @@ public void second_stage() {
         String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/hashbrown";
         new Shop_Get_hash_ContentTask().execute(sURL, "HASH", "SECOND_STAGE");
     }
-
+*/
 public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_item> server){
 
         Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
+    String [] client_array = new String[client.size()];
+    String [] server_array = new String[server.size()];
+
+    for (int i =0; i <client.size(); i++) {
+    client_array[i] = "";
+    }
+
+    for (int i =0; i <server.size(); i++) {
+        server_array[i] = "";
+    }
+
         for (int i =0; i <client.size(); i++){
             for(int j =0; j < server.size(); j++){
-                if(client.get(i).name.equals(server.get(j).name)) {
+                if(client.get(i).name.equals(server.get(j).name) && client.get(i).tag.equals(server.get(j).tag)) {
                     Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
 
-                    if(client.get(i).serve_id.equals("")) {
-                        Toast.makeText(this, "client serve_id blank", Toast.LENGTH_SHORT).show();
+                    if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
                         Shoplist_item temp = client.get(i);
                         temp.serve_id = server.get(j).serve_id;
-                        //update_client_item(temp,"EDIT");
-                    }
-                    else if (server.get(j).client_id.equals("-1")){
-                        Toast.makeText(this, "server client_id blank", Toast.LENGTH_SHORT).show();
-                        Shoplist_item temp = server.get(j);
-                        temp.client_id = client.get(i).client_id;
-                        //update_server_item(temp, "EDIT");
-                    }
-
-                    else if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
-                        Shoplist_item temp = client.get(i);
-                        temp.serve_id = server.get(j).serve_id;
-                        //update_server_item(temp, "EDIT");
+                        update_server_item(temp, "EDIT");
+                        client_array[i] = "UPDATE";
+                        server_array[j] = "UPDATE";
                         Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                     }
 
                     else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
                         Shoplist_item temp = server.get(j);
                         temp.client_id = client.get(i).client_id;
-                        //update_client_item(temp, "EDIT");
+                       update_client_item(temp, "EDIT");
+                        client_array[i] = "UPDATE";
+                        server_array[j] = "UPDATE";
                        Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                    }
+                    else  {
+                        client_array[i] = "EXISTS";
+                        server_array[j] = "EXISTS";
                     }
                 }
             }
+
+            if (client_array[i].equals("") || client_array[i].isEmpty()){
+                update_server_item(client.get(i), "ADD");
+            }
         }
-        repopulate(null);
+
+    for (int i = 0 ; i < server.size(); i++){
+        if (server_array[i].equals("") || server_array[i].isEmpty()){
+            update_client_item(server.get(i), "ADD");
+        }
+    }
+
+    repopulate(null);
 
     }
 
@@ -515,11 +542,11 @@ public void update_server_item(Shoplist_item item, String type){
 
 
         if(type.equals("ADD")) {
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/add_item/" + item.name + "/" + item.priority + "/" + item.modified + "/" + item.deleted + "/" + item.client_id;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/add_item/" + item.name.replace(" ", "_") + "/" + item.priority + "/" + item.modified + "/" + item.deleted + "/" + item.tag + "/" +item.client_id;
             new Shop_GetUrlContentTask().execute(sURL, "ADD", "NO_RETURN");
         }
         else if(type.equals("EDIT")){
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/sync_item/" + item.serve_id + "/" + item.name + "/" + item.priority + "/" + item.modified + "/" + item.deleted + "/" + item.client_id;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/sync_item/" + item.serve_id + "/" + item.name.replace(" ", "_") + "/" + item.priority + "/" + item.modified + "/" + item.deleted + "/" + item.client_id;
             new Shop_GetUrlContentTask().execute(sURL, "UPDATE", "NO_RETURN");
         }
     }
