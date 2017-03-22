@@ -239,6 +239,7 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
 
                     if (!x || !y) {
 
+                        Toast.makeText(Shoplist.this, "sync required", Toast.LENGTH_SHORT).show();
                         client_sync_list.clear();
                         server_sync_list.clear();
 
@@ -249,11 +250,11 @@ private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String
 
                                 client_sync_list.add(value);
                             }
-
+                        }
                             String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
                             new Shop_GetUrlContentTask().execute(sURL, "SHOW", "SECOND_STAGE");
 
-                        }
+
                     }
 
                 //END CHECK HASH
@@ -427,7 +428,6 @@ private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
                         if (clid.isEmpty() || clid.equals("") || clid.equals("null"))
                             clid = "-1";
                         //Toast.makeText(Shoplist.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
-                        if (!jsonArray.getJSONObject(i).getString("tag").isEmpty())
                             server_sync_list.add(new Shoplist_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("priority"), jsonArray.getJSONObject(i).getString("deleted"), jsonArray.getJSONObject(i).getString("modified"), jsonArray.getJSONObject(i).getString("tag") ,jsonArray.getJSONObject(i).getString("id")));
                     }
 
@@ -481,7 +481,7 @@ public void second_stage() {
 */
 public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_item> server){
 
-        Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
+    Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
     String [] client_array = new String[client.size()];
     String [] server_array = new String[server.size()];
 

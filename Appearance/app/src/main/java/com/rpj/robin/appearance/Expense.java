@@ -931,7 +931,7 @@ public class Expense extends AppCompatActivity {
                         if(!valuemash.isEmpty()) {
                             for (Expense_item value : valuemash) {
 
-                               Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
+                             //  Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
                                 client_sync_list.add(value);
                             }
                         }
@@ -1126,7 +1126,7 @@ public class Expense extends AppCompatActivity {
                             clid = "-1";
                        // Toast.makeText(Expense.this, "final Client id is " + clid, Toast.LENGTH_SHORT).show();
 
-                        Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
 
                         server_sync_list.add(new Expense_item(clid, jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getString("cost"), jsonArray.getJSONObject(i).getString("date"), jsonArray.getJSONObject(i).getString("category"),jsonArray.getJSONObject(i).getString("deleted"),jsonArray.getJSONObject(i).getString("modified"),jsonArray.getJSONObject(i).getString("tag"), jsonArray.getJSONObject(i).getString("id")));
                     }
@@ -1134,7 +1134,7 @@ public class Expense extends AppCompatActivity {
                     if (!client_sync_list.isEmpty() || !server_sync_list.isEmpty())
                         compare_updates(client_sync_list, server_sync_list);
                     else
-                        Toast.makeText(Expense.this, "Clientlist or serverlist is empty", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Expense.this, "Client and Server are empty", Toast.LENGTH_SHORT).show();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1201,8 +1201,10 @@ public class Expense extends AppCompatActivity {
 
         for (int i =0; i <client.size(); i++){
             for(int j =0; j < server.size(); j++){
+              //  Toast.makeText(this, "Client tag " + client.get(i).tag, Toast.LENGTH_SHORT).show();
+               //Toast.makeText(this, "Server tag " + server.get(j).tag, Toast.LENGTH_SHORT).show();
                 if(client.get(i).tag.equals(server.get(j).tag)) {
-                    Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
+                  //  Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
 
                     if(!client.get(i).tag.equals("null") && !client.get(i).tag.equals("0") ) {
                         if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
@@ -1226,13 +1228,14 @@ public class Expense extends AppCompatActivity {
                     }
                     else {
                                 if(client.get(i).serve_id.equals(server.get(j).serve_id)){
+
                                     if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
                                         Expense_item temp = client.get(i);
                                         temp.serve_id = server.get(j).serve_id;
                                         update_server_item(temp, "EDIT");
                                         client_array[i] = "UPDATE";
                                         server_array[j] = "UPDATE";
-                                        Toast.makeText(this, "null Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                                       Toast.makeText(this, "null Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                                     } else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
                                         Expense_item temp = server.get(j);
                                         temp.client_id = client.get(i).client_id;

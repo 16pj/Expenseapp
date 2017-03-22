@@ -3,6 +3,7 @@ from flask_mysqldb import MySQL
 import datetime
 import json
 import time
+import urllib2
 
 app = Flask(__name__)
 
@@ -57,6 +58,20 @@ def master_transport_expense_items(from_table, to_table):
             mysql.connection.commit()
     del cur
     return str(strin)
+
+
+@app.route('/master/go/<string:to_table>')
+def master_go(to_table):
+    cur = mysql.connection.cursor()
+
+    response = urllib2.urlopen('http://rojo16.pythonanywhere.com/robin/expense/items')
+    html = response.read()
+    hj = json.loads(html)
+    for i in hj:
+        cur.execute('''INSERT INTO %s(name, cost, category, month) value ("%s", "%s", "%s", "%s")''' % (
+        to_table, str(i['name']), str(i['cost']), str(i['category']), str(i['date'])))
+        mysql.connection.commit()
+    return "done"
 
 if __name__ == "__main__":
     app.run('0.0.0.0', 35741, debug=True)

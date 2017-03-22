@@ -42,7 +42,7 @@ class Sqealer extends SQLiteOpenHelper {
 
         String query = "CREATE TABLE " + TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT " + "," +
-                name_col + " TEXT " + ","+ cost_column + " INT " +  ","+ date_column + " INT " + ","+ category_column + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag + " INT " + ","+ servid_col + " INT " +
+                name_col + " TEXT " + ","+ cost_column + " INT " +  ","+ date_column + " INT " + ","+ category_column + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag + " TEXT " + ","+ servid_col + " INT " +
                 ");";
 
         db.execSQL(query);
@@ -434,16 +434,16 @@ class Sqealer extends SQLiteOpenHelper {
         String end = get_sub_date(month, batch_start);
 
         SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT sum("+ tag + "),sum(" + modified_col+") FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
+        String query = "SELECT sum("+ tag + ")%100000,sum(" + modified_col+")%100000 FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        int columnnumber = c.getColumnIndex("sum(" +tag +")");
+        int columnnumber = c.getColumnIndex("sum(" +tag +")%100000");
 
         do {
             if (c.getString(columnnumber) != null) {
 
-                dbString = c.getString(c.getColumnIndex("sum(" +tag +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+                dbString = c.getInt(c.getColumnIndex("sum(" +tag +")%100000")) + ":" + c.getInt(c.getColumnIndex("sum(" +modified_col +")%100000"));
             }
         }while (c.moveToNext());
 

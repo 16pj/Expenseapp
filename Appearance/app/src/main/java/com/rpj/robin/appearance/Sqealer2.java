@@ -36,7 +36,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
         String query = "CREATE TABLE " + myconf.SHOPLIST_TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT " + "," +
-                name_col + " TEXT " + ","+ priority_col + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag_col + " INT " + ","+ servid_col + " INT " +
+                name_col + " TEXT " + ","+ priority_col + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag_col + " TEXT " + ","+ servid_col + " INT " +
                 ");";
 
         db.execSQL(query);
@@ -211,16 +211,16 @@ class Sqealer2 extends SQLiteOpenHelper {
      String shoplisthashbrown(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT sum("+ tag_col + "),sum(" + modified_col+") FROM " + myconf.SHOPLIST_TABLE_NAME;
+        String query = "SELECT sum("+ tag_col + ")%100000,sum(" + modified_col+")%100000 FROM " + myconf.SHOPLIST_TABLE_NAME;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        int columnnumber = c.getColumnIndex("sum(" +tag_col +")");
+        int columnnumber = c.getColumnIndex("sum(" +tag_col +")%100000");
 
         do {
             if (c.getString(columnnumber) != null) {
 
-                dbString = c.getString(c.getColumnIndex("sum(" +tag_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+                dbString = c.getInt(c.getColumnIndex("sum(" +tag_col +")%100000")) + ":" + c.getInt(c.getColumnIndex("sum(" +modified_col +")%100000"));
             }
         }while (c.moveToNext());
 
