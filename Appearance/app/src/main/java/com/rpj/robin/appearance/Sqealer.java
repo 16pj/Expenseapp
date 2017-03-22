@@ -462,16 +462,28 @@ class Sqealer extends SQLiteOpenHelper {
         String end = get_sub_date(month, batch_start);
 
         SQLiteDatabase db = getReadableDatabase();
+<<<<<<< HEAD
         String query = "SELECT sum("+ tag + ")%100000,sum(" + modified_col+")%100000 FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
         int columnnumber = c.getColumnIndex("sum(" +tag +")%100000");
+=======
+        String query = "SELECT sum("+ tag + "),sum(" + modified_col+") FROM " + TABLE_NAME + " WHERE " + date_column  + " > " + start + " and " + date_column + " <= " + end;
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        int columnnumber = c.getColumnIndex("sum(" +tag +")");
+>>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
 
         do {
             if (c.getString(columnnumber) != null) {
 
+<<<<<<< HEAD
                 dbString = c.getInt(c.getColumnIndex("sum(" +tag +")%100000")) + ":" + c.getInt(c.getColumnIndex("sum(" +modified_col +")%100000"));
+=======
+                dbString = c.getString(c.getColumnIndex("sum(" +tag +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+>>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
             }
         }while (c.moveToNext());
 

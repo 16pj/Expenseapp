@@ -234,7 +234,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
 
 
-public void update_Values(Shoplist_item item){
+ void update_Values(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + priority_col + " =  \"" + item.priority+ "\" , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }

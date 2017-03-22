@@ -34,6 +34,10 @@ Spree needs a new offline sync feature and test for bugs, refinements.
 
 Spree has offline mode of shoplist, need to make it sync with server
 Spree now supports synchronization with server. Internet is not a requirement except for initial login
+<<<<<<< HEAD
 Spree only needs cleaner code and proper table exporting
 Spree has table exporting, now needs sync implementation in a service (every 5 sec), clean code
 Spree now has sync as a service and it works. Clean code and prepare for v1.0
+=======
+Spree only needs cleaner code and proper table exporting
+>>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
