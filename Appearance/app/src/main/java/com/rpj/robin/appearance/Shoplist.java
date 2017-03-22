@@ -1,7 +1,12 @@
 package com.rpj.robin.appearance;
 
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,7 +24,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 
 public class Shoplist extends AppCompatActivity {
@@ -37,6 +45,8 @@ public class Shoplist extends AppCompatActivity {
     private String [] hashbrown = new String[2];
     private String login_name;
     private String login_pass;
+    private int retry_time = 0;
+    private int retry_number = 0;
 
     private String myURL = myconf.global_url;
 
@@ -83,6 +93,38 @@ public class Shoplist extends AppCompatActivity {
         repopulate(null);
     }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("SYNC-REQUIRED"));
+    }
+
+    // handler for received Intents for the "my-event" event
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            if(message.startsWith("SYNC-REQUIRED:")){
+
+                check_hash();
+
+            }
+            Log.d("receiver", "Got message: " + message);
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
+    }
+
     @Override
 protected void onDestroy() {
         super.onDestroy();
@@ -120,7 +162,7 @@ public void repopulate(View view) {
         e.printStackTrace();
     }
 
-            check_hash();
+           // check_hash();
            // second_stage();
        // Toast.makeText(this, hashmash[0] + "," + hashmash[1], Toast.LENGTH_SHORT).show();
     }
@@ -175,117 +217,22 @@ public void onPriority(View view) {
 
 public void check_hash() {
 
-    String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/hashbrown";
-    new Shop_Get_hash_ContentTask().execute(sURL, "HASH", "CHECK_HASH");
-}
+    Toast.makeText(Shoplist.this, "sync required", Toast.LENGTH_SHORT).show();
+    client_sync_list.clear();
+    server_sync_list.clear();
 
+    ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
 
-private class Shop_Get_hash_ContentTask extends AsyncTask<String, String, String> {
-    private String whenceforth = "";
-    protected String doInBackground(String... params) {
+    if(!valuemash.isEmpty()) {
+        for (Shoplist_item value : valuemash) {
 
-             whenceforth = params[2];
-
-            switch (params[1]) {
-
-                case ("HASH") :
-                    try {
-                        URL url = new URL(params[0]);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setRequestMethod("GET");
-                        connection.setConnectTimeout(5000);
-                        connection.setReadTimeout(5000);
-                        connection.connect();
-                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                        String content = "", line;
-                        while ((line = rd.readLine()) != null) {
-                            content += line + "\n";
-                        }
-                        return content;
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                default:
-                    break;
-
-            }
-
-            return null;
-        }
-
-        protected void onProgressUpdate(String... progress) {}
-
-        protected void onPostExecute(String  result) {
-
-            try {
-                JSONArray jsonArray = new JSONArray(result);
-                for (int i =0; i< jsonArray.length(); i++) {
-                    hashbrown[0] = jsonArray.getJSONObject(i).getString("s_id");
-                    hashbrown[1] = jsonArray.getJSONObject(i).getString("s_modified");
-                }
-                Toast.makeText(Shoplist.this, "Server hash is " + hashbrown[0] + ", " + hashbrown[1], Toast.LENGTH_SHORT).show();
-
-                if(whenceforth.equals("CHECK_HASH")) {
-
-                    //CHECK HASH
-                    String[] hashmash = sqealee2.shoplisthashbrown().split(":");
-
-                    boolean x = hashmash[0].equals(hashbrown[0]);
-                    boolean y = hashmash[1].equals(hashbrown[1]);
-
-                    Toast.makeText(Shoplist.this, String.format("my localhash is  %s , %s", hashmash[0],hashmash[1]), Toast.LENGTH_SHORT).show();
-
-                    if (!x || !y) {
-
-                        Toast.makeText(Shoplist.this, "sync required", Toast.LENGTH_SHORT).show();
-                        client_sync_list.clear();
-                        server_sync_list.clear();
-
-                        ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
-
-                        if(!valuemash.isEmpty()) {
-                            for (Shoplist_item value : valuemash) {
-
-                                client_sync_list.add(value);
-                            }
-                        }
-                            String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
-                            new Shop_GetUrlContentTask().execute(sURL, "SHOW", "SECOND_STAGE");
-
-
-                    }
-
-                //END CHECK HASH
-                }
-               /* else if(whenceforth.equals("SECOND_STAGE")) {
-
-                    client_sync_list.clear();
-                    server_sync_list.clear();
-
-                    ArrayList<Shoplist_item> valuemash = sqealee2.getArray2();
-
-                    if(!valuemash.isEmpty()) {
-                        for (Shoplist_item value : valuemash) {
-
-                            client_sync_list.add(value);
-                        }
-
-                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
-                        new Shop_GetUrlContentTask().execute(sURL, "SHOW", "SECOND_STAGE");
-
-                    }
-
-                }
-*/
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
+            client_sync_list.add(value);
         }
     }
+    String sURL = myURL + "/" + login_name + ":" + login_pass + "/shoplist/get_items";
+    new Shop_GetUrlContentTask().execute(sURL, "SHOW", "SECOND_STAGE");
 
+}
 
 private class Shop_GetUrlContentTask extends AsyncTask<String, String, String> {
     private String whenceforth = "";

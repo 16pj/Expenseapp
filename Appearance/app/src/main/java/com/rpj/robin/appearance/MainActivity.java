@@ -17,6 +17,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     private String myURL = myconf.global_url;
+    private Intent hashservice;
 
 
     @Override
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
         String output = snappref.getString("STATUS", "");
+
 
         if (output.isEmpty()) {
             SharedPreferences.Editor editor = snappref.edit();
@@ -45,9 +47,9 @@ public class MainActivity extends AppCompatActivity {
         else if(output.equals("OFF")) {
             Toast.makeText(this, "Welcome To Spree!", Toast.LENGTH_SHORT).show();
         }
-
+       hashservice = new Intent(this, HashService.class);
+        startService(hashservice);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-
+        stopService(hashservice);
 
 
     }

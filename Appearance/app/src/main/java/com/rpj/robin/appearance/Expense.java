@@ -1,13 +1,18 @@
 package com.rpj.robin.appearance;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -62,6 +67,7 @@ public class Expense extends AppCompatActivity {
     private int selected_2 = 0;
     private int retry_time = 0;
     private int retry_number = 0;
+    private String hash_check = "0";
 
     Sqealer sqealee;
     private String [] hashbrown = new String[2];
@@ -149,6 +155,40 @@ public class Expense extends AppCompatActivity {
 
         repopulate(null);
 
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register mMessageReceiver to receive messages.
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("SYNC-REQUIRED"));
+    }
+
+    // handler for received Intents for the "my-event" event
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Extract data included in the Intent
+            String message = intent.getStringExtra("message");
+            if(message.startsWith("SYNC-REQUIRED:")){
+                hash_check = message.split(":")[1];
+                if(hash_check.equals("0"))
+                check_hash("0");
+                else check_full_hash();
+
+            }
+            Log.d("receiver", "Got message: " + message);
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        // Unregister since the activity is not visible
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
     }
 
 
@@ -269,7 +309,7 @@ public class Expense extends AppCompatActivity {
         TOTAL_FLAG="FALSE";
         CATEGOY_FLAG = "FALSE";
         //check_hash(0);
-        check_full_hash();
+      //  check_full_hash();
     }
 
     public void overpopulate(View view){
@@ -280,7 +320,7 @@ public class Expense extends AppCompatActivity {
                get_items(batch);
             else
                get_categories(Selected_category_total,batch);
-            check_hash(batch);
+            check_hash(String.valueOf(batch));
             batch += 1;
             listView.clearChoices();
         }
@@ -852,31 +892,32 @@ public class Expense extends AppCompatActivity {
 
 
 
-    public void check_hash(int batch) {
-        String month_string = new SimpleDateFormat("mmss", Locale.GERMANY).format(new Date());
-        int month_int;
+    public void check_hash(String batch) {
 
-        try {
-            month_int  = Integer.parseInt(month_string);
-        }
-        catch (Exception e){
-            month_int = 0;
-        }
+        Toast.makeText(Expense.this, "sync required", Toast.LENGTH_SHORT).show();
+        client_sync_list.clear();
+        server_sync_list.clear();
+        ArrayList<Expense_item> valuemash;
+        if(!batch.equals("-1"))
+            valuemash = sqealee.get_batch_array(Integer.parseInt(batch));
+        else
+            valuemash = sqealee.get_full_array();
 
-        if(retry_number < 5) {
-            retry_time = month_int;
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown/" + String.valueOf(batch);
-            String message = "CHECK_HASH" + ":" + String.valueOf(batch);
-            new Expense_Get_hash_ContentTask().execute(sURL, "HASH", message);
-            Toast.makeText(this, "Try attempt " + retry_number, Toast.LENGTH_SHORT).show();
-        }
-        else Toast.makeText(this, "Too many tries but something couldn't sync!", Toast.LENGTH_SHORT).show();
+        if(!valuemash.isEmpty()) {
+            for (Expense_item value : valuemash) {
 
-        if(month_int > retry_time+30) {
-            retry_number = 0;
-            retry_time = month_int;
+                //  Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
+                client_sync_list.add(value);
+            }
         }
-        else retry_number++;
+        String sURL;
+        String message = "SECOND_STAGE" + ":" +  batch;
+        if(!batch.equals("-1"))
+            sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
+        else
+            sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_all";
+
+        new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
 
     }
 
