@@ -439,12 +439,15 @@ def clear_old_expense_items(user, passwd):
                     return json.dumps([{'name': "invalid credentials"}])
 
 
+
+
 @app.route('/<string:user>:<string:passwd>/expense/hashbrown')
-def get_total_hash_expense(user, passwd):
+def get_fullhash_expense(user, passwd):
             if verify_user(user, passwd):
                 cur = mysql.connection.cursor()
+
                 cur.execute(
-                    '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table''' % user)
+                    '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table''' % (user))
                 ret_val = cur.fetchall()
                 sting = [i for i in ret_val]
                 spring = []
@@ -458,6 +461,7 @@ def get_total_hash_expense(user, passwd):
                 return json.dumps(spring)
             else:
                 return json.dumps([{'name': "invalid credentials"}])
+
 
 
 
@@ -496,6 +500,23 @@ def get_batch_expense(user, passwd, batch):
         start = get_sub_date(month, batch_start+3)
         end = get_sub_date(month, batch_start)
         cur.execute('''SELECT id, name, cost, month, category,  modified, deleted, tag, client_id from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "cost", "date", "category", "modified", "deleted", "tag", "client_id"], i))
+            spring.append(thing)
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/get_all')
+def get_all_expense(user, passwd):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+
+        cur.execute('''SELECT id, name, cost, month, category,  modified, deleted, tag, client_id from %s_expense_table''' % (user))
         ret_val = cur.fetchall()
         sting = [i for i in ret_val]
         spring = []

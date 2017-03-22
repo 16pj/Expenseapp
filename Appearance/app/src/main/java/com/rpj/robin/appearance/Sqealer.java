@@ -398,19 +398,20 @@ class Sqealer extends SQLiteOpenHelper {
 //////////////////////////// SYNC FUNCTIONS //////////////////////////
 
 
-    String expenselisthashbrown1(){
+    String expenselist_fullhashbrown(){
         String dbString= "";
+
         SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT sum("+ servid_col + "),sum(" + modified_col+") FROM " + TABLE_NAME;
+        String query = "SELECT sum("+ tag + ")%100000,sum(" + modified_col+")%100000 FROM " + TABLE_NAME;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
-        int columnnumber = c.getColumnIndex("sum(" +servid_col +")");
+        int columnnumber = c.getColumnIndex("sum(" +tag +")%100000");
 
         do {
             if (c.getString(columnnumber) != null) {
 
-                dbString = c.getString(c.getColumnIndex("sum(" +servid_col +")")) + ":" + c.getString(c.getColumnIndex("sum(" +modified_col +")"));
+                dbString = c.getInt(c.getColumnIndex("sum(" +tag +")%100000")) + ":" + c.getInt(c.getColumnIndex("sum(" +modified_col +")%100000"));
             }
         }while (c.moveToNext());
 
@@ -422,6 +423,33 @@ class Sqealer extends SQLiteOpenHelper {
         db.close();
         c.close();
         return dbString;
+    }
+
+
+    ArrayList<Expense_item> get_full_array(){
+
+        ArrayList <Expense_item> myArray = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_NAME;
+
+        Cursor c = db.rawQuery(query, null);
+        c.moveToFirst();
+
+        try {
+            do {
+                if (c.getString(c.getColumnIndex(name_col)) != null) {
+                    myArray.add(new Expense_item(c.getString(c.getColumnIndex(COLUMN_ID)), c.getString(c.getColumnIndex(name_col)), c.getString(c.getColumnIndex(cost_column)), c.getString(c.getColumnIndex(date_column)), c.getString(c.getColumnIndex(category_column)), c.getString(c.getColumnIndex(deleted_col)), c.getString(c.getColumnIndex(modified_col)), c.getString(c.getColumnIndex(tag)), c.getString(c.getColumnIndex(servid_col)) ));
+                }
+            } while (c.moveToNext());
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        c.close();
+        db.close();
+
+        return myArray;
     }
 
 

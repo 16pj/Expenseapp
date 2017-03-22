@@ -60,6 +60,9 @@ public class Expense extends AppCompatActivity {
     private String login_pass;
     private int selected_1 = 0;
     private int selected_2 = 0;
+    private int retry_time = 0;
+    private int retry_number = 0;
+
     Sqealer sqealee;
     private String [] hashbrown = new String[2];
 
@@ -265,7 +268,8 @@ public class Expense extends AppCompatActivity {
         batch=1;
         TOTAL_FLAG="FALSE";
         CATEGOY_FLAG = "FALSE";
-        check_hash(0);
+        //check_hash(0);
+        check_full_hash();
     }
 
     public void overpopulate(View view){
@@ -849,11 +853,61 @@ public class Expense extends AppCompatActivity {
 
 
     public void check_hash(int batch) {
+        String month_string = new SimpleDateFormat("mmss", Locale.GERMANY).format(new Date());
+        int month_int;
 
-        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown/" + String.valueOf(batch);
-        String message = "CHECK_HASH" + ":" +  String.valueOf(batch);
-        new Expense_Get_hash_ContentTask().execute(sURL,"HASH", message);
+        try {
+            month_int  = Integer.parseInt(month_string);
+        }
+        catch (Exception e){
+            month_int = 0;
+        }
+
+        if(retry_number < 5) {
+            retry_time = month_int;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown/" + String.valueOf(batch);
+            String message = "CHECK_HASH" + ":" + String.valueOf(batch);
+            new Expense_Get_hash_ContentTask().execute(sURL, "HASH", message);
+            Toast.makeText(this, "Try attempt " + retry_number, Toast.LENGTH_SHORT).show();
+        }
+        else Toast.makeText(this, "Too many tries but something couldn't sync!", Toast.LENGTH_SHORT).show();
+
+        if(month_int > retry_time+30) {
+            retry_number = 0;
+            retry_time = month_int;
+        }
+        else retry_number++;
+
     }
+
+    public void check_full_hash() {
+        String month_string = new SimpleDateFormat("mmss", Locale.GERMANY).format(new Date());
+        int month_int;
+
+        try {
+            month_int  = Integer.parseInt(month_string);
+        }
+        catch (Exception e){
+            month_int = 0;
+        }
+
+        if(retry_number < 5) {
+            retry_time = month_int;
+            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown";
+            String message = "CHECK_HASH" + ":" + String.valueOf("-1");
+            new Expense_Get_hash_ContentTask().execute(sURL, "HASH", message);
+            Toast.makeText(this, "Try attempt " + retry_number, Toast.LENGTH_SHORT).show();
+        }
+        else Toast.makeText(this, "Too many tries but some things couldn't sync!", Toast.LENGTH_SHORT).show();
+
+        if(month_int > retry_time+30) {
+            retry_number = 0;
+            retry_time = month_int;
+        }
+        else retry_number++;
+
+    }
+
 
 
     private class Expense_Get_hash_ContentTask extends AsyncTask<String, String, String> {
@@ -910,10 +964,12 @@ public class Expense extends AppCompatActivity {
                 Toast.makeText(Expense.this, "Server hash is " + hashbrown[0] + ", " + hashbrown[1] + " for batch: " + batch, Toast.LENGTH_SHORT).show();
 
                 if(whenceforth.equals("CHECK_HASH")) {
-
+                    String[] hashmash;
                     //CHECK HASH
                     server_sync_list.clear();
-                    String[] hashmash = sqealee.expenselisthashbrown(Integer.parseInt(batch)).split(":");
+                    if(!batch.equals("-1"))
+                        hashmash = sqealee.expenselisthashbrown(Integer.parseInt(batch)).split(":");
+                    else hashmash = sqealee.expenselist_fullhashbrown().split(":");
 
                     boolean x = hashmash[0].equals(hashbrown[0]);
                     boolean y = hashmash[1].equals(hashbrown[1]);
@@ -925,8 +981,11 @@ public class Expense extends AppCompatActivity {
                         Toast.makeText(Expense.this, "sync required", Toast.LENGTH_SHORT).show();
                         client_sync_list.clear();
                         server_sync_list.clear();
-
-                        ArrayList<Expense_item> valuemash = sqealee.get_batch_array(Integer.parseInt(batch));
+                        ArrayList<Expense_item> valuemash;
+                        if(!batch.equals("-1"))
+                            valuemash = sqealee.get_batch_array(Integer.parseInt(batch));
+                        else
+                            valuemash = sqealee.get_full_array();
 
                         if(!valuemash.isEmpty()) {
                             for (Expense_item value : valuemash) {
@@ -935,11 +994,14 @@ public class Expense extends AppCompatActivity {
                                 client_sync_list.add(value);
                             }
                         }
+                        String sURL;
                         String message = "SECOND_STAGE" + ":" +  batch;
-                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
+                        if(!batch.equals("-1"))
+                        sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
+                        else
+                            sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_all";
+
                         new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
-
-
 
                     }
 
