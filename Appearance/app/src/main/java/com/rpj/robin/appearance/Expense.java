@@ -73,7 +73,6 @@ public class Expense extends AppCompatActivity {
     private String [] hashbrown = new String[2];
 
 
-
     private String myURL = myconf.global_url;
 
 
@@ -322,7 +321,6 @@ public class Expense extends AppCompatActivity {
             else
                get_categories(Selected_category_total,batch);
             check_hash(String.valueOf(batch));
-
             batch += 1;
             listView.clearChoices();
         }
@@ -419,16 +417,12 @@ public class Expense extends AppCompatActivity {
         final ArrayAdapter<String> adp_c = new ArrayAdapter<>(Expense.this,
                 android.R.layout.simple_spinner_item, c);
 
-
-
         final EditText name = new EditText(Expense.this);
-
         RelativeLayout.LayoutParams rm = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         name.setLayoutParams(rm);
         name.setId(View.generateViewId());
         final EditText cost = new EditText(Expense.this);
-
         RelativeLayout.LayoutParams rn = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         rn.addRule(RelativeLayout.RIGHT_OF, name.getId() );
@@ -446,13 +440,6 @@ public class Expense extends AppCompatActivity {
         ro.addRule(RelativeLayout.BELOW, cost.getId());
 
 
-
-
-        RelativeLayout.LayoutParams ro = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        ro.addRule(RelativeLayout.BELOW, cost.getId());
-
-
         final Spinner sp_m = new Spinner(Expense.this);
         sp_m.setLayoutParams(ro);
         sp_m.setAdapter(adp_m);
@@ -462,7 +449,7 @@ public class Expense extends AppCompatActivity {
         }catch (Exception e){
             pos = 0;
         }
-        sp_m.setSelection(pos);
+            sp_m.setSelection(pos);
         sp_m.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -475,6 +462,7 @@ public class Expense extends AppCompatActivity {
             }
         });
         sp_m.setId(View.generateViewId());
+
 
         final Spinner sp_c = new Spinner(Expense.this);
         //  sp_c.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -587,75 +575,6 @@ public class Expense extends AppCompatActivity {
         });
 
 
-
-        final ArrayAdapter<Integer> adp_minus = new ArrayAdapter<Integer>(this, android.R.layout.simple_spinner_item, neg_x);
-        final ArrayAdapter<Integer> adp_plus = new ArrayAdapter<Integer>(this, android.R.layout.simple_spinner_item, x);
-
-        Spinner np = new Spinner(Expense.this);
-
-
-        RelativeLayout.LayoutParams rr = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        rr.addRule(RelativeLayout.BELOW, sp_c.getId());
-        rr.addRule(RelativeLayout.RIGHT_OF, split_text.getId());
-
-        np.setLayoutParams(rr);
-        np.setAdapter(adp_minus);
-        np.setId(View.generateViewId());
-
-        Spinner np2 = new Spinner(Expense.this);
-
-        RelativeLayout.LayoutParams rs = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        rs.addRule(RelativeLayout.BELOW, sp_c.getId());
-        rs.addRule(RelativeLayout.RIGHT_OF, np.getId());
-
-
-
-
-        TextView colon_text = new TextView(Expense.this);
-        colon_text.setText(String.valueOf(" : "));
-        colon_text.setTextSize(16);
-
-        colon_text.setLayoutParams(rs);
-        colon_text.setId(View.generateViewId());
-
-
-        RelativeLayout.LayoutParams rt = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        rt.addRule(RelativeLayout.BELOW, sp_c.getId());
-        rt.addRule(RelativeLayout.RIGHT_OF, colon_text.getId());
-
-
-        np2.setAdapter(adp_plus);
-
-        np2.setLayoutParams(rt);
-        np2.setId(View.generateViewId());
-        np.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selected_1 = neg_x[position];
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-
-        });
-        np2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selected_2 = x[position];
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-
         AlertDialog.Builder builder = new AlertDialog.Builder(Expense.this);
 
         RelativeLayout ll=new RelativeLayout(this);
@@ -670,11 +589,11 @@ public class Expense extends AppCompatActivity {
         ll.addView(np2);
 
         builder.setView(ll);
-
         builder.setPositiveButton("Add",  new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String nam = name.getText().toString();
                 String cos = cost.getText().toString();
+
 
                 nam = nam.replace(" ", "_");
 
@@ -682,8 +601,6 @@ public class Expense extends AppCompatActivity {
 
                     sqealee.addValue(new Expense_item("", nam, cos, date_from_monthstring(Selected_month), Selected_category, "0", String.valueOf(System.currentTimeMillis() / 1000L), String.valueOf(System.currentTimeMillis() / 1000L), ""));
                 }
-
-
                 else {
                     if (cos.equals("")) cos = "0";
 
@@ -1356,7 +1273,7 @@ public class Expense extends AppCompatActivity {
 
         second_stage(batch);
 
-        //String x = String.valueOf(client_stuff.size()) + " , " +  String.valueOf(server_stuff.size());
+        String x = String.valueOf(client_stuff.size()) + " , " +  String.valueOf(server_stuff.size());
         //Toast.makeText(this,x , Toast.LENGTH_SHORT).show();
     }
 
@@ -1486,7 +1403,6 @@ public class Expense extends AppCompatActivity {
         new Expense_GetUrlContentTask().execute(sURL, "CLEANUP", "NO_RETURN:");
     }
 
-
     public int [] split_it(int a, int b, int sum) {
 
         int[] split_month = new int[-a + b + 1 + 1];
@@ -1513,5 +1429,8 @@ public class Expense extends AppCompatActivity {
             yy -= 1;}
         return (String.valueOf(yy * 100 + mm));
     }
+
+
+
 
 }

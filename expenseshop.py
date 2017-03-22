@@ -175,11 +175,7 @@ def get_hash(user, passwd):
             if verify_user(user, passwd):
                 cur = mysql.connection.cursor()
                 cur.execute(
-<<<<<<< HEAD
                     '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_shoplist_table''' % user)
-=======
-                    '''SELECT sum(tag), sum(modified) from %s_shoplist_table''' % user)
->>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
                 ret_val = cur.fetchall()
                 sting = [i for i in ret_val]
                 spring = []
@@ -451,11 +447,7 @@ def get_fullhash_expense(user, passwd):
                 cur = mysql.connection.cursor()
 
                 cur.execute(
-<<<<<<< HEAD
                     '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table''' % (user))
-=======
-                    '''SELECT sum(tag), sum(modified) from %s_expense_table''' % user)
->>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
                 ret_val = cur.fetchall()
                 sting = [i for i in ret_val]
                 spring = []
@@ -483,11 +475,7 @@ def get_hash_expense(user, passwd, batch):
                 start = get_sub_date(month, batch_start + 3)
                 end = get_sub_date(month, batch_start)
                 cur.execute(
-<<<<<<< HEAD
                     '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table where month > %s and month <= %s''' % (user, start, end))
-=======
-                    '''SELECT sum(tag), sum(modified) from %s_expense_table where month > %s and month <= %s''' % (user, start, end))
->>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
                 ret_val = cur.fetchall()
                 sting = [i for i in ret_val]
                 spring = []
@@ -520,7 +508,6 @@ def get_batch_expense(user, passwd, batch):
             spring.append(thing)
         del cur
         return json.dumps(spring)
-<<<<<<< HEAD
     else:
         return json.dumps([{'name': "invalid credentials"}])
 
@@ -538,8 +525,6 @@ def get_all_expense(user, passwd):
             spring.append(thing)
         del cur
         return json.dumps(spring)
-=======
->>>>>>> 487d231ddd028b7a8f21f1792a91f5da074dfc35
     else:
         return json.dumps([{'name': "invalid credentials"}])
 
