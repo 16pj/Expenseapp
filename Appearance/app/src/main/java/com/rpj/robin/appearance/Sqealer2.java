@@ -14,7 +14,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Spree_shoplist.db";
-    //private static final String myconf.SHOPLIST_TABLE_NAME = "shoplist_table";
+    private static final String TABLE_NAME = "shoplist_table";
     private static final String COLUMN_ID = "_id";
     private static final String name_col = "name";
     private static final String modified_col = "modified";
@@ -34,7 +34,7 @@ class Sqealer2 extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        String query = "CREATE TABLE " + myconf.SHOPLIST_TABLE_NAME + "(" +
+        String query = "CREATE TABLE " + TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT " + "," +
                 name_col + " TEXT " + ","+ priority_col + " TEXT " + ","+ deleted_col + " INT " + ","+ modified_col + " INT " + ","+ tag_col + " TEXT " + ","+ servid_col + " INT " +
                 ");";
@@ -46,14 +46,14 @@ class Sqealer2 extends SQLiteOpenHelper {
     @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-            db.execSQL("DROP TABLE IF EXISTS " + myconf.SHOPLIST_TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
             onCreate(db);
     }
 
 
      void truncater(){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DROP TABLE IF EXISTS " + myconf.SHOPLIST_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);    }
 
      void addValue(Shoplist_item item) {
@@ -68,25 +68,30 @@ class Sqealer2 extends SQLiteOpenHelper {
          values.put(tag_col, item.tag);
          values.put(servid_col, item.serve_id);
 
-         db.insert(myconf.SHOPLIST_TABLE_NAME, null, values);
+         db.insert(TABLE_NAME, null, values);
 
          db.close();
      }
 
      void cleanup(){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM " + myconf.SHOPLIST_TABLE_NAME + " WHERE "+ deleted_col + " = 1 and " + modified_col + "< \"" + ((System.currentTimeMillis() / 1000) - (86500 *no_of_days_before_cleanup)) + "\" ;" );
-    }
+         try{
+        db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE "+ deleted_col + " = 1 and " + modified_col + "< \"" + ((System.currentTimeMillis() / 1000) - (86500 *no_of_days_before_cleanup)) + "\" ;" );
+    }catch (Exception e){
+             e.printStackTrace();
+         }
+
+     }
 
      void deleteValues(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
-            db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + deleted_col + " = 1, " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
+            db.execSQL("UPDATE " + TABLE_NAME + " set " + deleted_col + " = 1, " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }
 /*
     public String getValues(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM " + myconf.SHOPLIST_TABLE_NAME + " WHERE 1";
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE 1";
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
@@ -109,7 +114,7 @@ class Sqealer2 extends SQLiteOpenHelper {
      ArrayList<String> getArray(){
         ArrayList <String> myArray = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM " + myconf.SHOPLIST_TABLE_NAME + " order by " + priority_col +" DESC";
+        String query = "SELECT * FROM " + TABLE_NAME + " order by " + priority_col +" DESC";
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
@@ -141,7 +146,7 @@ class Sqealer2 extends SQLiteOpenHelper {
   ArrayList<Shoplist_item> getArray1(){
         ArrayList <Shoplist_item> myArray = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM " + myconf.SHOPLIST_TABLE_NAME + " order by " + priority_col +" DESC";
+        String query = "SELECT * FROM " + TABLE_NAME + " order by " + priority_col +" DESC";
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
@@ -172,7 +177,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
         ArrayList <Shoplist_item> myArray = new ArrayList<>();
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT * FROM " + myconf.SHOPLIST_TABLE_NAME + " order by " + priority_col +" DESC";
+        String query = "SELECT * FROM " + TABLE_NAME + " order by " + priority_col +" DESC";
 
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
@@ -195,12 +200,12 @@ class Sqealer2 extends SQLiteOpenHelper {
 
      void prioritize(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
-            db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + priority_col + " = 'YES' , " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) + " WHERE " + COLUMN_ID  + "= \"" + item.client_id + "\" ;" );
+            db.execSQL("UPDATE " + TABLE_NAME + " set " + priority_col + " = 'YES' , " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) + " WHERE " + COLUMN_ID  + "= \"" + item.client_id + "\" ;" );
     }
 
      void unprioritize(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
-         db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + priority_col + " = 'NO' , " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) + " WHERE " + COLUMN_ID  + "= \"" + item.client_id + "\" ;" );
+         db.execSQL("UPDATE " + TABLE_NAME + " set " + priority_col + " = 'NO' , " + modified_col + " = " + ((System.currentTimeMillis() / 1000)) + " WHERE " + COLUMN_ID  + "= \"" + item.client_id + "\" ;" );
     }
 
 
@@ -211,7 +216,7 @@ class Sqealer2 extends SQLiteOpenHelper {
      String shoplisthashbrown(){
         String dbString= "";
         SQLiteDatabase db = getWritableDatabase();
-        String query = "SELECT sum("+ tag_col + ")%100000,sum(" + modified_col+")%100000 FROM " + myconf.SHOPLIST_TABLE_NAME;
+        String query = "SELECT sum("+ tag_col + ")%100000,sum(" + modified_col+")%100000 FROM " + TABLE_NAME;
         Cursor c = db.rawQuery(query, null);
         c.moveToFirst();
 
@@ -236,7 +241,7 @@ class Sqealer2 extends SQLiteOpenHelper {
 
 public void update_Values(Shoplist_item item){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("UPDATE " + myconf.SHOPLIST_TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + priority_col + " =  \"" + item.priority+ "\" , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
+        db.execSQL("UPDATE " + TABLE_NAME + " set " + name_col + " =  \"" + item.name + "\" , " + deleted_col + " = " + item.deleted + " , " + priority_col + " =  \"" + item.priority+ "\" , " + modified_col + " = " + item.modified + " , " + servid_col + " = " + item.serve_id +  " WHERE " + COLUMN_ID  + " = \"" + item.client_id + "\" ;" );
     }
 
 }

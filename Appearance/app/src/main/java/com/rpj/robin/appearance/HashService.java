@@ -152,6 +152,7 @@ public class HashService extends Service {
         login_pass = sharedpref.getString("password", "");
 
         mHandler = new android.os.Handler();
+        if(!login_name.isEmpty())
         checkHash();
         return START_STICKY;
     }

@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.jar.Pack200;
 
 
 class Sqealer extends SQLiteOpenHelper {
@@ -97,7 +98,11 @@ class Sqealer extends SQLiteOpenHelper {
 
     void cleanup(){
         SQLiteDatabase db = getWritableDatabase();
+        try{
         db.execSQL("DELETE FROM " + TABLE_NAME + " WHERE "+ deleted_col + " = 1 and " + modified_col + "< \"" + ((System.currentTimeMillis() / 1000) - (86500 *no_of_days_before_cleanup)) + "\" ;" );
+    }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     void deleteValues(Expense_item item){

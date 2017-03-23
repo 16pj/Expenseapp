@@ -428,7 +428,7 @@ public void second_stage() {
 */
 public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_item> server){
 
-    Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
+    //Toast.makeText(this, "compare updates", Toast.LENGTH_SHORT).show();
     String [] client_array = new String[client.size()];
     String [] server_array = new String[server.size()];
 
@@ -443,7 +443,7 @@ public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_
         for (int i =0; i <client.size(); i++){
             for(int j =0; j < server.size(); j++){
                 if(client.get(i).name.equals(server.get(j).name) && client.get(i).tag.equals(server.get(j).tag)) {
-                    Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
+                  //  Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
 
                     if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
                         Shoplist_item temp = client.get(i);
@@ -451,7 +451,7 @@ public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_
                         update_server_item(temp, "EDIT");
                         client_array[i] = "UPDATE";
                         server_array[j] = "UPDATE";
-                        Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                     }
 
                     else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
@@ -460,7 +460,7 @@ public void compare_updates(ArrayList<Shoplist_item> client, ArrayList<Shoplist_
                        update_client_item(temp, "EDIT");
                         client_array[i] = "UPDATE";
                         server_array[j] = "UPDATE";
-                       Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                     //  Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.priority + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                     }
                     else  {
                         client_array[i] = "EXISTS";
