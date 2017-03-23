@@ -38,9 +38,9 @@ class CustomUsersAdapter extends ArrayAdapter<Expense_item> {
 
          TextView headingview = (TextView) convertView.findViewById(R.id.heading);
 
-         tvname.setText(expense_item.name);
-         tvcost.setText(expense_item.cost);
-         tvcategory.setText(expense_item.category);
+        tvname.setText(expense_item.name);
+        tvcost.setText(expense_item.cost);
+        tvcategory.setText(expense_item.category);
 
          String month = expense_item.date.substring(2);
          String year = "20" + expense_item.date.substring(0,2);

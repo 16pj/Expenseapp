@@ -20,6 +20,7 @@ app.config['MYSQL_PASSWORD'] = 'test123'
 app.config['MYSQL_DB'] = 'testdb'
 
 mysql = MySQL(app)
+days_before_cleanup = 30
 
 @app.route('/')
 def index():
@@ -32,12 +33,12 @@ def index():
 def get_items(user, passwd):
     if verify_user(user, passwd):
         cur = mysql.connection.cursor()
-        cur.execute('''SELECT name, priority from %s_shoplist_table order by priority desc''' % user)
+        cur.execute('''SELECT id, name, priority, modified, deleted from %s_shoplist_table order by priority desc ''' % user)
         ret_val = cur.fetchall()
         sting = [i for i in ret_val]
         spring = []
         for i in sting:
-            thing = dict(zip(["name", "priority"], i))
+            thing = dict(zip(["id", "name", "priority", "modified", "deleted"], i))
             spring.append(thing)
         del cur
         return json.dumps(spring)
@@ -57,7 +58,7 @@ def manage_items(user, passwd, item):
                 idee = -1
             items = item.split(',')
             for i, j in enumerate(items):
-                cur.execute('''INSERT INTO %s_shoplist_table(id, name) value (%s ,"%s")''' % (user, idee+1+i, j))
+                cur.execute('''INSERT INTO %s_shoplist_table(id, name, modified, deleted) value (%s ,"%s", %s, %s)''' % (user, idee+1+i, j, time.time(), 0))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Added %s!" % item}])
@@ -66,7 +67,7 @@ def manage_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''DELETE from %s_shoplist_table where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set deleted = 1, modified = %s where name = "%s"''' % (user, time.time(),item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Deleted item(s)!"}])
@@ -81,7 +82,7 @@ def prioritize_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''UPDATE %s_shoplist_table set priority = "YES" where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set priority = "YES", modified = %s where name = "%s"''' % (user, time.time(), item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Set Priorities!"}])
@@ -96,13 +97,98 @@ def unprioritize_items(user, passwd, item):
             cur = mysql.connection.cursor()
             items = item.split(',')
             for i, item in enumerate(items):
-                cur.execute('''UPDATE %s_shoplist_table set priority = "NO" where name = "%s"''' % (user, item))
+                cur.execute('''UPDATE %s_shoplist_table set priority = "NO", modified = %s where name = "%s"''' % (user, time.time(), item))
                 mysql.connection.commit()
             del cur
             return json.dumps([{'result': "Unset Priorities!"}])
     else:
         return json.dumps([{'name': "invalid credentials"}])
 
+
+#########################################SHOPLIST SYNC
+
+@app.route('/<string:user>:<string:passwd>/shoplist/get_items')
+def get_sync_items(user, passwd):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+        cur.execute('''SELECT id, name, priority, modified, deleted, tag, client_id from %s_shoplist_table order by priority desc ''' % user)
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "priority", "modified", "deleted", "tag", "client_id"], i))
+            spring.append(thing)
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/shoplist/sync_item/<string:idee>/<string:item>/<string:priority>/<string:modified>/<string:deleted>/<string:client_id>', methods=['PUT'])
+def sync_items(idee, user, passwd, item, priority, modified, deleted, client_id):
+    if verify_user(user, passwd):
+        if request.method == 'PUT':
+            cur = mysql.connection.cursor()
+            items = item.split(',')
+            for i, item in enumerate(items):
+                cur.execute('''UPDATE %s_shoplist_table set name = "%s", priority = "%s", modified = "%s", deleted = "%s", client_id="%s" where id = "%s"''' % (user, item, priority, modified, deleted, client_id, idee))
+                mysql.connection.commit()
+            del cur
+            return json.dumps([{'result': "sync edit!"}])
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/shoplist/add_item/<string:item>/<string:priority>/<string:modified>/<string:deleted>/<string:tag>/<string:client_id>',methods=['POST'])
+def add_items(user, passwd, item, priority, modified, deleted, tag, client_id):
+        if verify_user(user, passwd):
+            if request.method == 'POST':
+                cur = mysql.connection.cursor()
+                items = item.split(',')
+                for i, item in enumerate(items):
+                    cur.execute(
+                        '''INSERT INTO %s_shoplist_table(name, priority, modified, deleted, tag, client_id) value ("%s", "%s", "%s", "%s", "%s", "%s")''' % (user, item, priority, modified, deleted, tag, client_id))
+                    mysql.connection.commit()
+                del cur
+                return json.dumps([{'result': "sync add!"}])
+        else:
+            return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/shoplist/cleanup', methods=['DELETE'])
+def clear_old_items(user, passwd):
+            if verify_user(user, passwd):
+
+                if request.method == 'DELETE':
+                    cur = mysql.connection.cursor()
+                    cur.execute('''delete from %s_shoplist_table where deleted = 1 and modified < "%s" ''' % (
+                    user, time.time() - (86500 * days_before_cleanup)))
+                    mysql.connection.commit()
+                    del cur
+                    return json.dumps([{'result': "Cleaning up!"}])
+                else:
+                    return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/shoplist/hashbrown')
+def get_hash(user, passwd):
+            if verify_user(user, passwd):
+                cur = mysql.connection.cursor()
+                cur.execute(
+                    '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_shoplist_table''' % user)
+                ret_val = cur.fetchall()
+                sting = [i for i in ret_val]
+                spring = []
+                for j, k in sting:
+                    if j is None:
+                        j = "0"
+                    if k is None:
+                        k = "0"
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
+                del cur
+                return json.dumps(spring)
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
 
 # ############################EXPENSE PART#####################################
 
@@ -335,6 +421,245 @@ def edit_item(user, passwd, idee, item, month, cost, category):
     else:
         return json.dumps([{'name': "invalid credentials"}])
 
+# ########################################ExpenseLIST SYNC
+
+
+
+@app.route('/<string:user>:<string:passwd>/expense/cleanup', methods=['DELETE'])
+def clear_old_expense_items(user, passwd):
+            if verify_user(user, passwd):
+
+                if request.method == 'DELETE':
+                    cur = mysql.connection.cursor()
+                    cur.execute('''delete from %s_expense_table where deleted = 1 and modified < "%s" ''' % ( user, time.time() - (86500 * days_before_cleanup)))
+                    mysql.connection.commit()
+                    del cur
+                    return json.dumps([{'result': "Cleaning up!"}])
+                else:
+                    return json.dumps([{'name': "invalid credentials"}])
+
+
+
+
+@app.route('/<string:user>:<string:passwd>/expense/hashbrown')
+def get_fullhash_expense(user, passwd):
+            if verify_user(user, passwd):
+                cur = mysql.connection.cursor()
+
+                cur.execute(
+                    '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table''' % (user))
+                ret_val = cur.fetchall()
+                sting = [i for i in ret_val]
+                spring = []
+                for j, k in sting:
+                    if j is None:
+                        j = "0"
+                    if k is None:
+                        k = "0"
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
+                del cur
+                return json.dumps(spring)
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
+
+
+
+
+@app.route('/<string:user>:<string:passwd>/expense/hashbrown/<int:batch>')
+def get_hash_expense(user, passwd, batch):
+            if verify_user(user, passwd):
+                cur = mysql.connection.cursor()
+                now = datetime.datetime.now()
+                month = int(now.strftime("%y%m"))
+                batch_start = batch * 3
+                start = get_sub_date(month, batch_start + 3)
+                end = get_sub_date(month, batch_start)
+                cur.execute(
+                    '''SELECT sum(tag)%%100000, sum(modified)%%100000 from %s_expense_table where month > %s and month <= %s''' % (user, start, end))
+                ret_val = cur.fetchall()
+                sting = [i for i in ret_val]
+                spring = []
+                for j, k in sting:
+                    if j is None:
+                        j = "0"
+                    if k is None:
+                        k = "0"
+                    spring.append({"s_id": int(j), "s_modified": int(k)})
+                del cur
+                return json.dumps(spring)
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/get_batch/<int:batch>')
+def get_batch_expense(user, passwd, batch):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+        now = datetime.datetime.now()
+        month = int(now.strftime("%y%m"))
+        batch_start = batch*3
+        start = get_sub_date(month, batch_start+3)
+        end = get_sub_date(month, batch_start)
+        cur.execute('''SELECT id, name, cost, month, category,  modified, deleted, tag, client_id from %s_expense_table where month > %s and month <= %s order by month DESC''' % (user, start, end))
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "cost", "date", "category", "modified", "deleted", "tag", "client_id"], i))
+            spring.append(thing)
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/get_all')
+def get_all_expense(user, passwd):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+
+        cur.execute('''SELECT id, name, cost, month, category,  modified, deleted, tag, client_id from %s_expense_table''' % (user))
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "cost", "date", "category", "modified", "deleted", "tag", "client_id"], i))
+            spring.append(thing)
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/expense/get_batch_cat/<string:category>/<int:batch>')
+def get_cat_batch_expense(user, passwd, category, batch):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+        now = datetime.datetime.now()
+        month = int(now.strftime("%y%m"))
+        batch_start = batch*3
+        start = get_sub_date(month, batch_start+3)
+        end  = get_sub_date(month, batch_start)
+        cur.execute('''SELECT id, name, cost, month, category from %s_expense_table where month > %s and month <= %s and category = "%s" order by month DESC''' % (user, start, end, category))
+        ret_val = cur.fetchall()
+        cur.execute('''SELECT mon_lim from %s_limit_table where name = "DEFAULT"''' % user)
+        lim_val = cur.fetchone()
+        cur.execute('''SELECT sum(cost) from %s_expense_table where month = %s''' % (user, month))
+        mon_val = cur.fetchone()
+        try:
+            lim = str(lim_val[0] - mon_val[0])
+        except:
+            lim = str(lim_val[0])
+        sting = [i for i in ret_val]
+        spring = []
+        for i in sting:
+            thing = dict(zip(["id", "name", "cost", "date", "category"], i))
+            thing['limit'] = lim
+            thing['total'] = str(mon_val[0])
+            spring.append(thing)
+        if len(sting) != 0:
+            del cur
+            return json.dumps(spring)
+        else:
+            del cur
+            return json.dumps([{'limit': lim}])
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+@app.route('/<string:user>:<string:passwd>/expense/get_totals')
+def get_totals_expense(user, passwd):
+    if verify_user(user, passwd):
+        cur = mysql.connection.cursor()
+        cur.execute('''select month, sum(cost) from %s_expense_table group by month''' % user)
+        ret_val = cur.fetchall()
+        sting = [i for i in ret_val]
+        spring = []
+        for j, k in sting:
+                spring.append({"date": j, "cost": int(k)})
+        del cur
+        return json.dumps(spring)
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/add_item/<string:item>/<int:cost>/<string:category>/<string:date>/<string:deleted>/<string:modified>/<string:tag>/<string:client_id>',methods=['POST'])
+def add_expense_items(user, passwd, item, cost,category, date, deleted, modified, tag, client_id):
+        if verify_user(user, passwd):
+            if request.method == 'POST':
+                cur = mysql.connection.cursor()
+                items = item.split(',')
+                for i, item in enumerate(items):
+                    cur.execute(
+                        '''INSERT INTO %s_expense_table(name, cost, category, month, modified, deleted, tag, client_id) value ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")''' % (user, item, cost, category, date, modified, deleted, tag, client_id))
+                    mysql.connection.commit()
+                del cur
+                return json.dumps([{'result': "sync add!"}])
+        else:
+            return json.dumps([{'name': "invalid credentials"}])
+
+
+
+
+@app.route('/<string:user>:<string:passwd>/expense/sync_item/<string:idee>/<string:item>/<int:cost>/<string:category>/<string:date>/<string:deleted>/<string:modified>/<string:client_id>', methods=['PUT'])
+def sync_expense_items(idee, user, passwd, item, cost, category, date, deleted, modified, client_id):
+    if verify_user(user, passwd):
+        if request.method == 'PUT':
+            cur = mysql.connection.cursor()
+            items = item.split(',')
+            for i, item in enumerate(items):
+                cur.execute('''UPDATE %s_expense_table set name = "%s", cost = "%s", category = "%s", month = "%s", modified = "%s", deleted = "%s", client_id="%s" where id = "%s"''' % (user, item, cost, category, date, modified, deleted, client_id, idee))
+                mysql.connection.commit()
+            del cur
+            return json.dumps([{'result': "sync edit!"}])
+    else:
+        return json.dumps([{'name': "invalid credentials"}])
+
+
+
+@app.route('/<string:user>:<string:passwd>/expense/put_limit/<int:mon_lim>', methods=['PUT'])
+def update_limit_sync(user, passwd, mon_lim):
+            if verify_user(user, passwd):
+                cur = mysql.connection.cursor()
+                cur.execute('''UPDATE %s_limit_table set mon_lim = %d where name = "DEFAULT"''' % (user, mon_lim))
+                mysql.connection.commit()
+                del cur
+                return "Updated monthly limit to %s!" % mon_lim
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/items/<string:item>/<int:month>/<int:cost>',
+                   methods=['DELETE'])
+def delete_item_sync(user, passwd, item, month, cost):
+            if verify_user(user, passwd):
+                if request.method == 'DELETE':
+                    cur = mysql.connection.cursor()
+                    if cost == 0:
+                        cur.execute(
+                            '''DELETE from %s_expense_table where name = "%s" and month = "%s"''' % (user, item, month))
+                    else:
+                        cur.execute(
+                            '''DELETE from %s_expense_table where name = "%s" and month = "%s" and cost = "%s"''' % (
+                            user, item, month, cost))
+                    mysql.connection.commit()
+                    del cur
+                    return "Deleted %s!" % item
+                return "Done nothing!"
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
+
+@app.route('/<string:user>:<string:passwd>/expense/items/<string:idee>:<string:item>:<string:month>:<string:cost>:<string:category>',
+            methods=['PUT'])
+def edit_item1(user, passwd, idee, item, month, cost, category):
+            if verify_user(user, passwd):
+                if request.method == 'PUT':
+                    month = date_from_monthstring(month)
+                    cur = mysql.connection.cursor()
+                    cur.execute(
+                        '''UPDATE %s_expense_table set name = "%s", cost = "%s", month = "%s", category = "%s" where id = "%s"''' % (
+                        user, item, cost, month, category, idee))
+                    mysql.connection.commit()
+                    del cur
+                return "Updated %s!" % item
+            else:
+                return json.dumps([{'name': "invalid credentials"}])
 
 # ######################USER INFO#################################################
 
@@ -386,16 +711,16 @@ def reset_tables(name, passwd):
             cur.execute('''DROP TABLE IF EXISTS `%s`''' % (name+"_limit_table"))
             mysql.connection.commit()
 
-            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT)''' % (name + "_expense_table"))
+            cur.execute(''' create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), cost INT, month INT, category VARCHAR(20), modified INT, deleted TINYINT(1), client_id INT, tag VARCHAR(50))''' % (name + "_expense_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10))''' % (name + "_shoplist_table"))
+            cur.execute('''create table %s(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(20), priority VARCHAR(10), modified INT, deleted TINYINT(1), client_id INT,  tag VARCHAR(50))''' % (name + "_shoplist_table"))
             mysql.connection.commit()
 
-            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT)''' % (name + "_limit_table"))
+            cur.execute('''create table %s(name VARCHAR(20), mon_lim INT, modified INT,  tag VARCHAR(50))''' % (name + "_limit_table"))
             mysql.connection.commit()
 
-            cur.execute('''insert into %s(name, mon_lim) value ("DEFAULT", 1000)''' % (name + "_limit_table"))
+            cur.execute('''insert into %s(name, mon_lim, modified) value ("DEFAULT", 1000, %s)''' % (name + "_limit_table", time.time()))
             mysql.connection.commit()
             del cur
             return json.dumps([{'result': "REFRESHED"}])
@@ -439,7 +764,7 @@ def date_from_monthstring(a):
     month = "ERROR"
     for i, j in enumerate(m):
         if j == a:
-            if i >= 10:
+            if i >= 9:
                 month = str(i+1)
             else:
                 month = "0%d" % (i+1)
@@ -457,6 +782,47 @@ def verify_user(user, passwd):
     cur.execute('''SELECT password from user_table where name = "%s"''' % user)
     ret_val = cur.fetchone()
     return ret_val[0] == passwd
+
+
+@app.route('/master/shoplist/transport/<string:from_table>:<string:to_table>', methods=['PUT'])
+def master_transport_shoplist_items(from_table, to_table):
+   if request.method == 'PUT':
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT id, name, priority, modified, deleted, tag, client_id from %s order by priority desc ''' % from_table)
+    ret_val = cur.fetchall()
+    sting = [i for i in ret_val]
+    spring = []
+
+    strin = ""
+    cur.execute('''truncate table %s ''' % to_table)
+    mysql.connection.commit()
+    for i in sting:
+
+            strin += "id " + str(i[0]) + ", name " + str(i[1]) + ", priority " + str(i[2]) + ", modified " + str(i[3]) + ", deleted " + str(i[4]) + ", tag " + str(i[5]) + ", client_id" + str(i[6]) + "</br>\n"
+            cur.execute('''INSERT INTO %s(id, name, priority, modified, deleted, tag, client_id) value ("%s", "%s", "%s", "%s", "%s", "%s", "%s")''' % (to_table, str(i[0]), str(i[1]), str(i[2]), str(i[3]), str(i[4]), str(i[5]),str(i[6])))
+            mysql.connection.commit()
+    del cur
+    return str(strin)
+
+@app.route('/master/expense/transport/<string:from_table>:<string:to_table>', methods=['PUT'])
+def master_transport_expense_items(from_table, to_table):
+   if request.method == 'PUT':
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT id, name, cost, category, month, modified, deleted, tag, client_id from %s ''' % from_table)
+    ret_val = cur.fetchall()
+    sting = [i for i in ret_val]
+    spring = []
+
+    strin = ""
+    cur.execute('''truncate table %s ''' % to_table)
+    mysql.connection.commit()
+    for i in sting:
+
+            strin += "id " + str(i[0]) + ", name " + str(i[1]) + ", cost " + str(i[2]) + ", category " + str(i[3]) + ", month " + str(i[4])  + ", modified " + str(i[5]) + ", deleted " + str(i[6]) + ", tag " + str(i[7]) + ", client_id" + str(i[8]) + "</br>\n"
+            cur.execute('''INSERT INTO %s(id, name, cost, category, month, modified, deleted, tag, client_id) value ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")''' % (to_table, str(i[0]), str(i[1]), str(i[2]), str(i[3]), str(i[4]), str(i[5]),str(i[6]), str(i[7]), str(i[8])))
+            mysql.connection.commit()
+    del cur
+    return str(strin)
 
 # #######################MAIN #################################################3
 

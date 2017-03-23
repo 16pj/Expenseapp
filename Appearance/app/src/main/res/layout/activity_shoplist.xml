@@ -9,7 +9,6 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#FFEEEF"
     tools:context="com.rpj.robin.appearance.Shoplist">
 
 
@@ -30,7 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/listview"
-        android:background="#FF6B6B"
+        android:background="#FF8491"
         android:layout_above="@+id/editText"
         android:layout_below="@id/shophead"
         />
@@ -45,11 +44,7 @@
         android:layout_alignParentEnd="true"
         android:textSize="18sp"
         android:textStyle="normal|bold"
-        android:fontFamily="casual"
-        android:backgroundTint="#D1D0D1"
-        android:background="@drawable/button_rem"
-
-        />
+        android:fontFamily="casual" />
 
 
     <Button
@@ -62,10 +57,7 @@
         android:layout_centerHorizontal="true"
         android:textSize="18sp"
         android:textStyle="normal|bold"
-        android:fontFamily="casual"
-        android:backgroundTint="#D1D0D1"
-        android:background="@drawable/button_star"
-        />
+        android:fontFamily="casual" />
 
     <Button
         android:text="Add"
@@ -77,10 +69,7 @@
         android:textSize="18sp"
         android:textStyle="normal|bold"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:backgroundTint="#D1D0D1"
-        android:background="@drawable/button_add"
-        />
+        android:layout_alignParentStart="true" />
 
     <EditText
         android:layout_width="wrap_content"

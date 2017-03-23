@@ -36,6 +36,7 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         editname = (EditText) findViewById(R.id.editId);
         editpass = (EditText) findViewById(R.id.editPass);
+
     }
 
     public void onReg(View view) {
@@ -97,7 +98,6 @@ public class Login extends AppCompatActivity {
             String sURL = myURL + "/RESET/" + uname + ":" + upass;
             new GetUrlContentTask().execute(sURL, "RESET");
         }
-
     }
 
     public void saveInfo(String userName, String userPass){

@@ -8,7 +8,6 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#E1E6FF"
     tools:context="com.rpj.robin.appearance.Expense">
 
     <TextView
@@ -38,6 +37,18 @@
         android:layout_alignParentEnd="true" />
 
     <Button
+        android:text="Add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ADD"
+        android:onClick="onAdd"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp" />
+
+    <Button
         android:text="DEL"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -47,6 +58,7 @@
         android:layout_alignParentEnd="true"
         android:fontFamily="casual"
         android:textStyle="normal|bold"
+
         android:textSize="18sp"
         android:backgroundTint="#D1D0D1"
         android:background="@drawable/button_rem"
@@ -68,7 +80,7 @@
         android:onClick="repopulate"
         android:id="@+id/name"
         style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:background="#C9C9F7"
+        android:background="@android:color/holo_green_light"
         android:layout_centerHorizontal="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE"
@@ -97,13 +109,14 @@
         android:ems="10"
         android:id="@+id/num"
         android:onClick="repopulate"
-        android:background="#C9C9F7"
+        android:background="#8DB600"
         android:hint="Cost"
         android:fontFamily="casual"
         android:textSize="14sp"
         android:layout_alignParentBottom="true"
         android:layout_toEndOf="@+id/ADD"
         android:layout_toStartOf="@+id/REMOVE" />
+
 
     <Button
         android:text="Add"

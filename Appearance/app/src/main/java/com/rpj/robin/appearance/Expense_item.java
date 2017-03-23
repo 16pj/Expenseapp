@@ -5,14 +5,22 @@ class Expense_item {
      String cost;
      String date;
      String category;
-     public String id;
+    String modified;
+    String deleted;
+      String client_id;
+      String serve_id;
+     String tag;
 
-    Expense_item( String id, String name, String cost, String date, String category) {
+    Expense_item( String client_id, String name, String cost, String date, String category, String deleted, String modified, String tag, String serve_id) {
         this.name = name;
         this.cost = cost;
         this.date = date;
         this.category = category;
-        this.id = id;
+        this.modified = modified;
+        this.deleted = deleted;
+        this.client_id = client_id;
+        this.tag = tag;
+        this.serve_id =serve_id;
     }
 
 }

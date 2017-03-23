@@ -10,7 +10,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,8 +24,11 @@
             android:name=".Shoplist"
             android:label="@string/title_activity_shoplist" />
         <activity android:name=".Expense" />
-        <activity android:name=".Shoplist_offline" />
-        <activity android:name=".Expense_offline"/>
+
+        <service
+            android:name=".HashService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

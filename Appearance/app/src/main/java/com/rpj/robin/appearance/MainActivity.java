@@ -17,6 +17,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     private String myURL = myconf.global_url;
+    private Intent hashservice;
 
 
     @Override
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
         String output = snappref.getString("STATUS", "");
+
 
         if (output.isEmpty()) {
             SharedPreferences.Editor editor = snappref.edit();
@@ -45,9 +47,9 @@ public class MainActivity extends AppCompatActivity {
         else if(output.equals("OFF")) {
             Toast.makeText(this, "Welcome To Spree!", Toast.LENGTH_SHORT).show();
         }
-
+       hashservice = new Intent(this, HashService.class);
+        startService(hashservice);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -97,29 +99,6 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
 
-            case R.id.stuff3:
-                if (item.isChecked())
-                    item.setChecked(false);
-                else item.setChecked(true);
-
-                SharedPreferences snappref = getSharedPreferences("SNAP", Context.MODE_PRIVATE);
-                String output = snappref.getString("STATUS", "");
-
-                if (output.equals("OFF")) {
-                    Toast.makeText(this, "SNAP MODE ON.\nLAST SAVED LIST SHOWN", Toast.LENGTH_SHORT).show();
-                    SharedPreferences.Editor editor = snappref.edit();
-                    editor.putString("STATUS", "ON");
-                    editor.apply();
-                }
-                else  if (output.equals("ON")) {
-                    Toast.makeText(this, "SNAP MODE OFF.\nBACK ONLINE", Toast.LENGTH_SHORT).show();
-                    SharedPreferences.Editor editor = snappref.edit();
-                    editor.putString("STATUS", "OFF");
-                    editor.apply();
-                }
-
-                return true;
-
             default:
                 return true;
         }
@@ -130,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-
+        stopService(hashservice);
 
 
     }
@@ -153,10 +132,6 @@ public class MainActivity extends AppCompatActivity {
             if (output.equals("OFF")){
             Intent i = new Intent(MainActivity.this, Shoplist.class);
             startActivity(i);
-            }
-            else if (output.equals("ON")){
-                Intent j = new Intent(MainActivity.this, Shoplist_offline.class);
-                startActivity(j);
             }
 
     }

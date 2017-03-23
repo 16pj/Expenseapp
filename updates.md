@@ -31,3 +31,10 @@ Spree needs work on security of password, operations and refinemet in code
 Spree now has a secure md5 on password, json responses and refine code
 Spree now has edit, month totals, category wise items
 Spree needs a new offline sync feature and test for bugs, refinements.
+
+Spree has offline mode of shoplist, need to make it sync with server
+Spree now supports synchronization with server. Internet is not a requirement except for initial login
+Spree only needs cleaner code and proper table exporting
+Spree has table exporting, now needs sync implementation in a service (every 5 sec), clean code
+Spree now has sync as a service and it works. 
+Clean code and find/fix bugs and prepare for v1.0
