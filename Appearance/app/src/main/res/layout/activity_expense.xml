@@ -58,7 +58,11 @@
         android:layout_alignParentEnd="true"
         android:fontFamily="casual"
         android:textStyle="normal|bold"
-        android:textSize="18sp" />
+
+        android:textSize="18sp"
+        android:backgroundTint="#D1D0D1"
+        android:background="@drawable/button_rem"
+        />
 
     <ListView
         android:layout_width="match_parent"
@@ -114,6 +118,20 @@
         android:layout_toStartOf="@+id/REMOVE" />
 
 
+    <Button
+        android:text="Add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ADD"
+        android:onClick="onAdd"
+        android:fontFamily="casual"
+        android:textStyle="normal|bold"
+        android:textSize="18sp"
+        android:layout_alignParentBottom="true"
+        android:backgroundTint="#D1D0D1"
+        android:background="@drawable/button_add"
+        android:layout_alignParentStart="true"
+        />
 
 
 </RelativeLayout>
