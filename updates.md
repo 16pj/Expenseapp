@@ -38,3 +38,4 @@ Spree only needs cleaner code and proper table exporting
 Spree has table exporting, now needs sync implementation in a service (every 5 sec), clean code
 Spree now has sync as a service and it works. 
 Clean code and find/fix bugs and prepare for v1.0
+Ready for Spree_v1.0
