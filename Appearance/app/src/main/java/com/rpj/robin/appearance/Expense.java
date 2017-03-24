@@ -177,7 +177,7 @@ public class Expense extends AppCompatActivity {
                 hash_check = message.split(":")[1];
                 if(hash_check.equals("0"))
                 check_hash("0");
-                else check_full_hash();
+                //else check_hash("-1");
 
             }
             Log.d("receiver", "Got message: " + message);
@@ -298,6 +298,8 @@ public class Expense extends AppCompatActivity {
        // my_expenselist.clear();
         selecteditems.clear();
         client_sync_list.clear();
+        server_sync_list.clear();
+
         adapter.notifyDataSetChanged();
         listView.clearChoices();
         try {
@@ -921,159 +923,6 @@ public class Expense extends AppCompatActivity {
 
     }
 
-    public void check_full_hash() {
-        String month_string = new SimpleDateFormat("mmss", Locale.GERMANY).format(new Date());
-        int month_int;
-
-        try {
-            month_int  = Integer.parseInt(month_string);
-        }
-        catch (Exception e){
-            month_int = 0;
-        }
-
-        if(retry_number < 5) {
-            retry_time = month_int;
-            String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/hashbrown";
-            String message = "CHECK_HASH" + ":" + String.valueOf("-1");
-            new Expense_Get_hash_ContentTask().execute(sURL, "HASH", message);
-           // Toast.makeText(this, "Try attempt " + retry_number, Toast.LENGTH_SHORT).show();
-        }
-        else Toast.makeText(this, "Couldn't Sync Everything!", Toast.LENGTH_SHORT).show();
-
-        if(month_int > retry_time+30) {
-            retry_number = 0;
-            retry_time = month_int;
-        }
-        else retry_number++;
-
-    }
-
-
-
-    private class Expense_Get_hash_ContentTask extends AsyncTask<String, String, String> {
-        private String whenceforth = "";
-        private String batch = "0";
-        protected String doInBackground(String... params) {
-
-            whenceforth = params[2].split(":")[0];
-            try {
-                batch = params[2].split(":")[1];
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
-            switch (params[1]) {
-
-                case ("HASH") :
-                    try {
-                        URL url = new URL(params[0]);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setRequestMethod("GET");
-                        connection.setConnectTimeout(5000);
-                        connection.setReadTimeout(5000);
-                        connection.connect();
-                        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                        String content = "", line;
-                        while ((line = rd.readLine()) != null) {
-                            content += line + "\n";
-                        }
-                        return content;
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                default:
-                    break;
-
-            }
-
-            return null;
-        }
-
-        protected void onProgressUpdate(String... progress) {}
-
-        protected void onPostExecute(String  result) {
-
-            try {
-                JSONArray jsonArray = new JSONArray(result);
-                for (int i =0; i< jsonArray.length(); i++) {
-                    hashbrown[0] = jsonArray.getJSONObject(i).getString("s_id");
-                    hashbrown[1] = jsonArray.getJSONObject(i).getString("s_modified");
-                }
-               // Toast.makeText(Expense.this, "Server hash is " + hashbrown[0] + ", " + hashbrown[1] + " for batch: " + batch, Toast.LENGTH_SHORT).show();
-
-                if(whenceforth.equals("CHECK_HASH")) {
-                    String[] hashmash;
-                    //CHECK HASH
-                    server_sync_list.clear();
-                    if(!batch.equals("-1"))
-                        hashmash = sqealee.expenselisthashbrown(Integer.parseInt(batch)).split(":");
-                    else hashmash = sqealee.expenselist_fullhashbrown().split(":");
-
-                    boolean x = hashmash[0].equals(hashbrown[0]);
-                    boolean y = hashmash[1].equals(hashbrown[1]);
-
-                    //Toast.makeText(Expense.this, String.format("local hash is  %s , %s for batch: %s", hashmash[0],hashmash[1], batch), Toast.LENGTH_SHORT).show();
-
-                    if (!x || !y) {
-
-                        Toast.makeText(Expense.this, "sync required", Toast.LENGTH_SHORT).show();
-                        client_sync_list.clear();
-                        server_sync_list.clear();
-                        ArrayList<Expense_item> valuemash;
-                        if(!batch.equals("-1"))
-                            valuemash = sqealee.get_batch_array(Integer.parseInt(batch));
-                        else
-                            valuemash = sqealee.get_full_array();
-
-                        if(!valuemash.isEmpty()) {
-                            for (Expense_item value : valuemash) {
-
-                             //  Toast.makeText(Expense.this, "batch is " + batch, Toast.LENGTH_SHORT).show();
-                                client_sync_list.add(value);
-                            }
-                        }
-                        String sURL;
-                        String message = "SECOND_STAGE" + ":" +  batch;
-                        if(!batch.equals("-1"))
-                        sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
-                        else
-                            sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_all";
-
-                        new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
-
-                    }
-
-                    //END CHECK HASH
-                }
-              /*  else if(whenceforth.equals("SECOND_STAGE")) {
-
-                    client_sync_list.clear();
-                    server_sync_list.clear();
-
-                    ArrayList<Expense_item> valuemash = sqealee.getArray2();
-
-                    if(!valuemash.isEmpty()) {
-                        for (Expense_item value : valuemash) {
-
-                            client_sync_list.add(value);
-                        }
-                    }
-                        String message = "SECOND_STAGE" + ":" +  batch;
-                        String sURL = myURL + "/" + login_name + ":" + login_pass + "/expense/get_batch/" + batch ;
-                        new Expense_GetUrlContentTask().execute(sURL, "SHOW", message);
-
-
-                }
-*/
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-        }
-    }
 
 
     private class Expense_GetUrlContentTask extends AsyncTask<String, String, String> {
@@ -1307,7 +1156,7 @@ public class Expense extends AppCompatActivity {
               //  Toast.makeText(this, "Client tag " + client.get(i).tag, Toast.LENGTH_SHORT).show();
                //Toast.makeText(this, "Server tag " + server.get(j).tag, Toast.LENGTH_SHORT).show();
                 if(client.get(i).tag.equals(server.get(j).tag)) {
-                  //  Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "match found", Toast.LENGTH_SHORT).show();
 
                     if(!client.get(i).tag.equals("null") && !client.get(i).tag.equals("0") ) {
                         if (Integer.parseInt(client.get(i).modified) > Integer.parseInt(server.get(j).modified)) {
@@ -1316,14 +1165,14 @@ public class Expense extends AppCompatActivity {
                             update_server_item(temp, "EDIT");
                             client_array[i] = "UPDATE";
                             server_array[j] = "UPDATE";
-                            //Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                         } else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
                             Expense_item temp = server.get(j);
                             temp.client_id = client.get(i).client_id;
                             update_client_item(temp, "EDIT");
                             client_array[i] = "UPDATE";
                             server_array[j] = "UPDATE";
-                            //Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                         } else {
                             client_array[i] = "EXISTS";
                             server_array[j] = "EXISTS";
@@ -1338,14 +1187,14 @@ public class Expense extends AppCompatActivity {
                                         update_server_item(temp, "EDIT");
                                         client_array[i] = "UPDATE";
                                         server_array[j] = "UPDATE";
-                                       //Toast.makeText(this, "null Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                                       Toast.makeText(this, "null Server updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                                     } else if (Integer.parseInt(client.get(i).modified) < Integer.parseInt(server.get(j).modified)) {
                                         Expense_item temp = server.get(j);
                                         temp.client_id = client.get(i).client_id;
                                         update_client_item(temp, "EDIT");
                                         client_array[i] = "UPDATE";
                                         server_array[j] = "UPDATE";
-                                        //Toast.makeText(this, "null Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(this, "null Client updates " + temp.client_id + "," + temp.name + ", " + temp.cost + ", " + temp.deleted + ", " + temp.modified + ", " + temp.serve_id, Toast.LENGTH_SHORT).show();
                                     } else {
                                         client_array[i] = "EXISTS";
                                         server_array[j] = "EXISTS";
@@ -1357,14 +1206,16 @@ public class Expense extends AppCompatActivity {
 
             if (client_array[i].equals("") || client_array[i].isEmpty()){
                 update_server_item(client.get(i), "ADD");
-               // Toast.makeText(this, "Adding item to server", Toast.LENGTH_SHORT).show();
+               Toast.makeText(this, "Adding item to server", Toast.LENGTH_SHORT).show();
+                client_array[i] = "EXISTS";
             }
         }
 
         for (int i = 0 ; i < server.size(); i++){
             if (server_array[i].equals("") || server_array[i].isEmpty()){
                 update_client_item(server.get(i), "ADD");
-                //Toast.makeText(this, "Adding item to client", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Adding item to client", Toast.LENGTH_SHORT).show();
+                server_array[i] = "EXISTS";
 
             }
         }
